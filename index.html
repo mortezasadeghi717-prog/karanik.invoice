@@ -104,6 +104,10 @@
   .rowbetween{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
 
   .customer-cat-group{margin-bottom:16px;}
+  .report-grid{ display:grid; grid-template-columns:50% 25% 25%; width:100%; }
+  .report-grid > div{ padding:9px 8px; border-bottom:1px solid var(--line); font-size:13.5px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .report-grid > .rg-head{ font-weight:700; color:var(--muted); font-size:12px; padding:8px 8px; border-bottom:2px solid var(--line); white-space:normal; }
+  .report-grid > .num{ text-align:right; font-variant-numeric:tabular-nums; }
   .customer-cat-group h3{font-size:13px;color:var(--accent);margin:0 0 8px;font-weight:800;}
   .cust-card{border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#FBFCFC;}
   .cust-card .info b{font-size:14px;}
@@ -237,13 +241,36 @@
 <body>
 
 <div id="authScreen">
-  <div class="authCard">
+  <div class="authCard" id="authPanelLogin">
     <h1>ورود به کارانیک</h1>
     <p>با ایمیل و رمز عبوری که ثبت کرده‌اید وارد شوید. اطلاعات شما روی همه دستگاه‌ها همگام می‌شود.</p>
     <div class="field"><label>ایمیل</label><input type="text" id="authEmail" placeholder="you@example.com"></div>
     <div class="field"><label>رمز عبور</label><input type="password" id="authPassword"></div>
     <div class="authError" id="authError"></div>
     <button class="btn accent" id="loginBtn" style="width:100%;">ورود</button>
+    <div style="text-align:center;margin-top:14px;">
+      <button type="button" id="showForgotPasswordBtn" style="background:none;border:none;color:var(--primary);font-size:12.5px;cursor:pointer;text-decoration:underline;">رمز عبور را فراموش کرده‌اید؟</button>
+    </div>
+  </div>
+
+  <div class="authCard" id="authPanelForgot" style="display:none;">
+    <h1>بازیابی رمز عبور</h1>
+    <p>ایمیلتان را وارد کنید — یک لینک بازیابی برایتان ارسال می‌شود.</p>
+    <div class="field"><label>ایمیل</label><input type="text" id="forgotEmail" placeholder="you@example.com"></div>
+    <div class="authError" id="forgotError"></div>
+    <button class="btn accent" id="sendResetBtn" style="width:100%;">ارسال لینک بازیابی</button>
+    <div style="text-align:center;margin-top:14px;">
+      <button type="button" id="backToLoginBtn" style="background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;text-decoration:underline;">بازگشت به صفحه ورود</button>
+    </div>
+  </div>
+
+  <div class="authCard" id="authPanelNewPassword" style="display:none;">
+    <h1>تعیین رمز جدید</h1>
+    <p>یک رمز عبور جدید برای حساب خود انتخاب کنید.</p>
+    <div class="field"><label>رمز عبور جدید</label><input type="password" id="newPassword1"></div>
+    <div class="field"><label>تکرار رمز عبور جدید</label><input type="password" id="newPassword2"></div>
+    <div class="authError" id="newPasswordError"></div>
+    <button class="btn accent" id="saveNewPasswordBtn" style="width:100%;">ذخیره رمز جدید</button>
   </div>
 </div>
 
@@ -257,6 +284,7 @@
     <button class="navbtn active" data-view="invoice"><span class="ic">🧾</span><span>فاکتور جدید</span></button>
     <button class="navbtn" data-view="invoices"><span class="ic">📚</span><span>فاکتورها</span></button>
     <button class="navbtn" data-view="customers"><span class="ic">👥</span><span>مشتریان</span></button>
+    <button class="navbtn" data-view="products"><span class="ic">📦</span><span>محصولات</span></button>
     <button class="navbtn" data-view="reports"><span class="ic">📊</span><span>گزارش‌ها</span></button>
     <button class="navbtn" data-view="settings"><span class="ic">🏬</span><span>فروشگاه‌ها</span></button>
     <button class="navbtn" id="logoutBtn"><span class="ic">🚪</span><span>خروج</span></button>
@@ -302,6 +330,13 @@
             <div class="field"><label>شماره تماس</label><input type="tel" id="newCustPhone" list="customerPhoneList" placeholder="09xxxxxxxxx"></div>
             <div class="field"><label>دسته‌بندی</label><select id="newCustCategory"></select></div>
           </div>
+          <div class="grid cols3" style="margin-top:12px;">
+            <div class="field"><label>شهر</label><input type="text" id="newCustCity" list="cityList" placeholder="مثلاً: تبریز"></div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--ink);cursor:pointer;">
+            <input type="checkbox" id="newCustIsPartner" style="width:16px;height:16px;">
+            این مشتری همکار (فروش عمده) است، نه خریدار خرد
+          </label>
         </div>
       </div>
 
@@ -329,6 +364,7 @@
         <div class="btnrow">
           <button class="btn accent" id="saveInvoiceBtn">ذخیره فاکتور</button>
           <button class="btn ghost" id="printInvoiceBtn">دانلود PDF فاکتور</button>
+          <button class="btn ghost" id="shareWhatsAppBtn">ارسال از واتس‌اپ</button>
           <button class="btn ghost" id="cancelEditInvoiceBtn" style="display:none;">لغو ویرایش</button>
         </div>
       </div>
@@ -337,6 +373,20 @@
     <section class="view" id="view-invoices">
       <h1 class="pagetitle">فاکتورهای قبلی</h1>
       <p class="pagesub">تاریخچه‌ی فاکتورهای صادر شده.</p>
+
+      <div class="panel">
+        <div class="grid cols3">
+          <div class="field"><label>جستجو</label><input type="text" id="invoiceSearchInput" placeholder="نام مشتری، شماره فاکتور یا فروشگاه"></div>
+          <div class="field"><label>فروشگاه</label><select id="invoiceStoreFilter"></select></div>
+          <div class="field"><label>ترتیب</label>
+            <select id="invoiceSortOrder">
+              <option value="desc">جدیدترین اول</option>
+              <option value="asc">قدیمی‌ترین اول</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div class="panel">
         <table>
           <thead><tr><th style="width:13%">شماره</th><th style="width:13%">تاریخ</th><th style="width:15%">فروشگاه</th><th style="width:17%">مشتری</th><th class="num" style="width:14%">مبلغ</th><th style="width:28%"></th></tr></thead>
@@ -372,14 +422,27 @@
           <div class="field"><label>شماره تماس</label><input type="tel" id="custPhone" list="customerPhoneList"></div>
           <div class="field"><label>دسته‌بندی</label><select id="custCategory"></select></div>
         </div>
+        <div class="grid cols3" style="margin-top:12px;">
+          <div class="field"><label>شهر</label><input type="text" id="custCity" list="cityList" placeholder="مثلاً: تبریز"></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--ink);cursor:pointer;">
+          <input type="checkbox" id="custIsPartner" style="width:16px;height:16px;">
+          این مشتری همکار (فروش عمده) است، نه خریدار خرد
+        </label>
         <div class="btnrow"><button class="btn accent" id="addCustomerBtn">افزودن مشتری</button></div>
       </div>
 
       <div class="panel">
         <div class="rowbetween">
           <h2>لیست مشتریان</h2>
-          <div style="display:flex;gap:8px;align-items:center;">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
             <select id="filterCategory" style="width:auto;"></select>
+            <select id="filterCustomerCity" style="width:auto;"></select>
+            <select id="filterCustomerType" style="width:auto;">
+              <option value="همه">همکار و خرد</option>
+              <option value="partner">فقط همکار</option>
+              <option value="retail">فقط خریدار خرد</option>
+            </select>
             <button class="btn ghost sm" id="exportCustomersBtn">خروجی اکسل</button>
           </div>
         </div>
@@ -388,8 +451,41 @@
       </div>
     </section>
 
+    <datalist id="cityList"></datalist>
     <datalist id="customerNameList"></datalist>
     <datalist id="customerPhoneList"></datalist>
+    <datalist id="productNameList"></datalist>
+
+    <!-- ===== PRODUCTS VIEW ===== -->
+    <section class="view" id="view-products">
+      <h1 class="pagetitle">محصولات</h1>
+      <p class="pagesub">اسم محصولاتی که فاکتور می‌زنید اینجا ذخیره می‌شن. اسم‌ها رو اصلاح و دسته‌بندی کنید تا گزارش‌ها دقیق‌تر باشن — با اصلاح اسم، فاکتورهای قبلی هم خودکار به‌روز می‌شن.</p>
+
+      <div class="panel">
+        <h2 id="productFormTitle">افزودن محصول جدید</h2>
+        <div class="grid cols3">
+          <div class="field"><label>نام محصول</label><input type="text" id="productNameInput" placeholder="مثلاً: خمیر سیلیکون HY-880"></div>
+          <div class="field"><label>دسته‌بندی</label><select id="productCategorySelect"></select></div>
+          <div class="field"><label>آخرین قیمت (تومان)</label><input type="number" id="productPriceInput" min="0" step="1000"></div>
+        </div>
+        <div class="btnrow">
+          <button class="btn accent" id="saveProductBtn">ذخیره محصول</button>
+          <button class="btn ghost" id="cancelEditProductBtn" style="display:none;">انصراف از ویرایش</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="rowbetween">
+          <h2>لیست محصولات</h2>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="filterProductCategory" style="width:auto;"></select>
+            <button class="btn ghost sm" id="exportProductsBtn">خروجی اکسل</button>
+          </div>
+        </div>
+        <div id="productsListArea"></div>
+        <div class="empty" id="productsEmpty" style="display:none;">هنوز محصولی ثبت نشده است — با اولین فاکتور، محصولات خودکار اینجا اضافه می‌شن.</div>
+      </div>
+    </section>
 
     <section class="view" id="view-reports">
       <h1 class="pagetitle">گزارش‌های حسابداری</h1>
@@ -434,20 +530,21 @@
             <option value="yearly">سالانه</option>
           </select>
         </div>
-        <table>
-          <thead><tr><th style="width:50%">بازه</th><th class="num" style="width:25%">تعداد فاکتور</th><th class="num" style="width:25%">جمع فروش (تومان)</th></tr></thead>
-          <tbody id="periodReportBody"></tbody>
-        </table>
+        <div class="report-grid" id="periodReportGrid"></div>
         <div class="empty" id="periodReportEmpty" style="display:none;">داده‌ای برای این بازه یافت نشد.</div>
       </div>
 
       <div class="panel">
         <div class="rowbetween"><h2>فروش به تفکیک فروشگاه</h2></div>
-        <table>
-          <thead><tr><th style="width:50%">فروشگاه</th><th class="num" style="width:25%">تعداد فاکتور</th><th class="num" style="width:25%">جمع فروش (تومان)</th></tr></thead>
-          <tbody id="storeReportBody"></tbody>
-        </table>
+        <div class="report-grid" id="storeReportGrid"></div>
         <div class="empty" id="storeReportEmpty" style="display:none;">داده‌ای یافت نشد.</div>
+      </div>
+
+      <div class="panel">
+        <div class="rowbetween"><h2>فروش به تفکیک شهر</h2></div>
+        <p class="pagesub" style="margin-bottom:12px;">بر اساس شهری که برای هر مشتری در تب «مشتریان» ثبت کردید.</p>
+        <div class="report-grid" id="cityReportGrid"></div>
+        <div class="empty" id="cityReportEmpty" style="display:none;">هنوز شهری برای مشتریان ثبت نشده است.</div>
       </div>
 
       <div class="panel">
@@ -455,17 +552,31 @@
           <h2>فروش به تفکیک محصول</h2>
           <button class="btn ghost sm" id="exportReportBtn">خروجی اکسل</button>
         </div>
-        <table>
-          <thead><tr><th style="width:50%">نام محصول</th><th class="num" style="width:25%">تعداد فروش رفته</th><th class="num" style="width:25%">جمع فروش (تومان)</th></tr></thead>
-          <tbody id="productReportBody"></tbody>
-        </table>
+        <div class="report-grid" id="productReportGrid"></div>
         <div class="empty" id="reportEmpty" style="display:none;">داده‌ای برای این بازه یافت نشد.</div>
+      </div>
+
+      <div class="panel">
+        <div class="rowbetween"><h2>پرفروش‌ترین محصول هر دسته‌بندی</h2></div>
+        <p class="pagesub" style="margin-bottom:12px;">بر اساس دسته‌بندی‌ای که برای هر محصول در تب «محصولات» تعیین کردید.</p>
+        <div class="report-grid" id="categoryBestGrid" style="grid-template-columns:22% 28% 15% 22% 13%;"></div>
+        <div class="empty" id="categoryBestEmpty" style="display:none;">برای این بازه، محصولی با دسته‌بندی مشخص یافت نشد — از تب «محصولات» به محصولاتتان دسته‌بندی بدهید.</div>
       </div>
     </section>
 
     <section class="view" id="view-settings">
       <h1 class="pagetitle">فروشگاه‌ها</h1>
       <p class="pagesub">هر فروشگاه، اطلاعات و لوگوی جدای خودش را روی فاکتور نشان می‌دهد.</p>
+
+      <div class="panel">
+        <div class="rowbetween">
+          <div>
+            <h2>پشتیبان‌گیری از اطلاعات</h2>
+            <p class="pagesub" style="margin:4px 0 0;">یک فایل اکسل شامل همه‌ی مشتری‌ها، فاکتورها، محصولات، دسته‌بندی‌ها و فروشگاه‌ها دانلود کنید.</p>
+          </div>
+          <button class="btn ghost" id="backupBtn">دانلود پشتیبان کامل</button>
+        </div>
+      </div>
 
       <div class="panel">
         <h2 id="storeFormTitle">افزودن فروشگاه جدید</h2>
@@ -576,6 +687,7 @@
   let invoices  = [];
   let stores    = [];
   let categories = [];
+  let products  = []; // saved product names + last used price, for quick reuse on new invoices
   let invSelectedCustomerId = '__new__';
 
   const $ = (id) => document.getElementById(id);
@@ -816,6 +928,17 @@
       }
       await saveKey('stores', stores);
     }
+    products = await loadKey('products', []);
+    if(products.length===0 && invoices.length){
+      invoices.forEach(inv=> (inv.items||[]).forEach(it=>{
+        if(!products.find(p=>p.name===it.name)) products.push({id:uid(), name: it.name, category:'', price: it.price});
+      }));
+      if(products.length) await saveKey('products', products);
+    }
+    // backfill ids for any products saved before ids were introduced
+    let productsChanged = false;
+    products.forEach(p=>{ if(!p.id){ p.id = uid(); productsChanged = true; } });
+    if(productsChanged) await saveKey('products', products);
   }
 
   document.querySelectorAll('.navbtn[data-view]').forEach(btn=>{
@@ -826,6 +949,7 @@
       $('view-'+btn.dataset.view).classList.add('active');
       window.scrollTo(0,0);
       if(btn.dataset.view==='customers') renderCustomers();
+      if(btn.dataset.view==='products') renderProductsList();
       if(btn.dataset.view==='reports') renderReport();
       if(btn.dataset.view==='invoices') renderInvoicesList();
       if(btn.dataset.view==='invoice') populateStoreSelect();
@@ -841,7 +965,7 @@
     selectEl.value = selectedValue && categories.includes(selectedValue) ? selectedValue : '';
   }
   function populateAllCategorySelects(){
-    [$('custCategory'), $('newCustCategory')].forEach(sel=>populateCategorySelect(sel, sel.value));
+    [$('custCategory'), $('newCustCategory'), $('productCategorySelect')].forEach(sel=>populateCategorySelect(sel, sel.value));
   }
   async function handleCategorySelectChange(sel){
     if(sel.value !== '__new__') return;
@@ -857,6 +981,7 @@
   }
   $('custCategory').addEventListener('change', ()=>handleCategorySelectChange($('custCategory')));
   $('newCustCategory').addEventListener('change', ()=>handleCategorySelectChange($('newCustCategory')));
+  $('productCategorySelect').addEventListener('change', ()=>handleCategorySelectChange($('productCategorySelect')));
 
   $('addCategoryBtn').addEventListener('click', async ()=>{
     const name = $('newCategoryInput').value.trim();
@@ -878,8 +1003,23 @@
     categories.forEach(cat=>{
       const chip = document.createElement('span');
       chip.className = 'chip';
-      chip.innerHTML = `${escapeHtml(cat)} <button type="button" title="حذف دسته‌بندی">×</button>`;
-      chip.querySelector('button').addEventListener('click', async ()=>{
+      chip.innerHTML = `${escapeHtml(cat)} <button type="button" data-act="edit" title="ویرایش نام">✎</button><button type="button" data-act="del" title="حذف دسته‌بندی">×</button>`;
+      chip.querySelector('[data-act=edit]').addEventListener('click', async ()=>{
+        const newName = (window.prompt('نام جدید دسته‌بندی:', cat) || '').trim();
+        if(!newName || newName === cat) return;
+        if(categories.includes(newName)){ toast('این نام قبلاً استفاده شده'); return; }
+        const idx = categories.indexOf(cat);
+        categories[idx] = newName;
+        customers.forEach(c=>{ if(c.category === cat) c.category = newName; });
+        await saveKey('categories', categories);
+        await saveKey('customers', customers);
+        renderCategoryChips();
+        populateAllCategorySelects();
+        renderFilterCategoryOptions();
+        renderCustomers();
+        toast('نام دسته‌بندی به‌روزرسانی شد');
+      });
+      chip.querySelector('[data-act=del]').addEventListener('click', async ()=>{
         categories = categories.filter(c=>c!==cat);
         await saveKey('categories', categories);
         renderCategoryChips();
@@ -898,9 +1038,51 @@
     filterSel.value = Array.from(filterSel.options).some(o=>o.value===currentFilter) ? currentFilter : 'همه';
   }
 
+  const IRAN_CITIES = [
+    'تهران','مشهد','اصفهان','کرج','شیراز','تبریز','قم','اهواز','کرمانشاه','ارومیه',
+    'رشت','زاهدان','کرمان','اراک','یزد','اردبیل','بندرعباس','اسلام‌شهر','زنجان','سنندج',
+    'قزوین','خرم‌آباد','گرگان','ساری','همدان','بوشهر','ایلام','بیرجند','بجنورد','یاسوج',
+    'شهرکرد','سمنان','شاهرود','دزفول','آبادان','خرمشهر','بندر ماهشهر','اندیمشک','ایذه','بروجرد',
+    'الیگودرز','دورود','ملایر','نهاوند','تویسرکان','رفسنجان','سیرجان','جیرفت','بم','مرودشت',
+    'کازرون','جهرم','فسا','لار','داراب','نی‌ریز','مرند','مراغه','میانه','خوی',
+    'مهاباد','بوکان','میاندوآب','پیرانشهر','ساوه','خمین','محلات','دلیجان','نجف‌آباد','خمینی‌شهر',
+    'کاشان','شاهین‌شهر','گلپایگان','فولادشهر','آران و بیدگل','نطنز','سبزوار','نیشابور','تربت حیدریه','تربت جام',
+    'قوچان','کاشمر','گناباد','چناران','لاهیجان','لنگرود','آستارا','بندر انزلی','تالش','صومعه‌سرا',
+    'رودسر','فومن','آمل','بابل','قائم‌شهر','بهشهر','چالوس','رامسر','نوشهر','تنکابن',
+    'نور','بابلسر','خرمدره','ابهر','طارم','سقز','مریوان','بانه','قروه','دیواندره',
+    'بندر لنگه','میناب','قشم','کیش','رودان','بستک','خواف','کوهدشت','ازنا','پلدختر',
+    'شادگان','بهبهان','رامهرمز','شوشتر','مسجدسلیمان','هویزه','شوش','گچساران','دهدشت','سیریک',
+    'شهریار','ملارد','رباط‌کریم','پاکدشت','ورامین','پردیس','پاکدشت','دماوند','فیروزکوه','قدس',
+    'صفادشت','آبیک','تاکستان','بوئین‌زهرا','خدابنده','ماهنشان','هشتپر','آق‌قلا','گنبد کاووس','کردکوی',
+    'مینودشت','رامیان','آزادشهر','بندرترکمن','خواجه','اهر','کلیبر','جلفا','بناب','هریس',
+    'اسکو','شبستر','ملکان','عجب‌شیر','چاراویماق','سراب','ورزقان','خدابنده','همت‌آباد','سلماس',
+    'نقده','تکاب','شاهین‌دژ','چابهار','ایرانشهر','خاش','سراوان','زابل','میرجاوه','نیک‌شهر',
+    'رفسنجان','زرند','کهنوج','شهربابک','بردسیر','عنبرآباد','منوجان','فهرج','نرماشیر','ریگان'
+  ];
+
   function refreshCustomerDatalists(){
     $('customerNameList').innerHTML = customers.map(c=>`<option value="${escapeHtml(c.name)}">`).join('');
     $('customerPhoneList').innerHTML = customers.map(c=>c.phone ? `<option value="${escapeHtml(c.phone)}">` : '').join('');
+    const customCities = customers.map(c=>c.city).filter(Boolean);
+    const allCities = Array.from(new Set([...IRAN_CITIES, ...customCities])).sort((a,b)=>a.localeCompare(b,'fa'));
+    $('cityList').innerHTML = allCities.map(c=>`<option value="${escapeHtml(c)}">`).join('');
+  }
+  function refreshProductDatalist(){
+    $('productNameList').innerHTML = products.map(p=>`<option value="${escapeHtml(p.name)}">`).join('');
+  }
+  async function upsertProducts(items){
+    let changed = false;
+    items.forEach(it=>{
+      if(!it.name) return;
+      const existing = products.find(p=>p.name===it.name);
+      if(existing){ if(existing.price !== it.price){ existing.price = it.price; changed = true; } }
+      else { products.push({id:uid(), name: it.name, category:'', price: it.price}); changed = true; }
+    });
+    if(changed){
+      await saveKey('products', products);
+      refreshProductDatalist();
+      if($('view-products').classList.contains('active')) renderProductsList();
+    }
   }
   function autofillByName(nameInput, phoneInput, categorySelect){
     const match = customers.find(c=>c.name.trim() === nameInput.value.trim());
@@ -983,7 +1165,7 @@
     item = item || {name:'', desc:'', qty:1, price:0};
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td data-label="نام کالا"><input type="text" class="it-name" value="${escapeHtml(item.name)}" placeholder="نام کالا"></td>
+      <td data-label="نام کالا"><input type="text" class="it-name" list="productNameList" value="${escapeHtml(item.name)}" placeholder="نام کالا"></td>
       <td data-label="توضیحات"><input type="text" class="it-desc" value="${escapeHtml(item.desc)}" placeholder="توضیحات"></td>
       <td data-label="تعداد"><input type="number" class="it-qty" value="${item.qty}" min="0" step="1"></td>
       <td data-label="قیمت واحد"><input type="number" class="it-price" value="${item.price}" min="0" step="1000"></td>
@@ -992,6 +1174,14 @@
     `;
     tr.querySelector('.btn.danger').addEventListener('click', ()=>{ tr.remove(); recalcTotals(); });
     ['it-qty','it-price'].forEach(cls=>tr.querySelector('.'+cls).addEventListener('input', recalcTotals));
+    tr.querySelector('.it-name').addEventListener('input', (e)=>{
+      const match = products.find(p=>p.name === e.target.value.trim());
+      const priceInput = tr.querySelector('.it-price');
+      if(match && (!priceInput.value || Number(priceInput.value)===0)){
+        priceInput.value = match.price;
+        recalcTotals();
+      }
+    });
     $('itemsBody').appendChild(tr);
     recalcTotals();
   }
@@ -1026,7 +1216,7 @@
     invSelectedCustomerId = '__new__';
     updateSelectedCustomerLabel();
     toggleNewCustomerFields();
-    $('newCustName').value=''; $('newCustPhone').value='';
+    $('newCustName').value=''; $('newCustPhone').value=''; $('newCustCity').value=''; $('newCustIsPartner').checked = false;
     populateCategorySelect($('newCustCategory'), '');
   }
 
@@ -1086,7 +1276,7 @@
       const name = $('newCustName').value.trim();
       if(!name){ toast('نام مشتری را وارد کنید'); return null; }
       const catVal = $('newCustCategory').value;
-      const newCust = {id:uid(), name, phone:$('newCustPhone').value.trim(), category: catVal==='__new__' ? '' : catVal};
+      const newCust = {id:uid(), name, phone:$('newCustPhone').value.trim(), category: catVal==='__new__' ? '' : catVal, city: $('newCustCity').value.trim(), isPartner: $('newCustIsPartner').checked};
       customers.push(newCust);
       await saveKey('customers', customers);
       customerId = newCust.id; customerName = newCust.name;
@@ -1112,6 +1302,7 @@
       invoices.push(invoiceData);
     }
     await saveKey('invoices', invoices);
+    await upsertProducts(items);
     return invoiceData;
   }
 
@@ -1131,6 +1322,17 @@
     await fillPrintArea(inv);
     await exportInvoiceToPdf(inv.number);
     toast('فاکتور ذخیره شد و PDF آن دانلود شد');
+    resetInvoiceForm();
+    renderInvoicesList();
+    renderReport();
+  });
+
+  $('shareWhatsAppBtn').addEventListener('click', async ()=>{
+    const inv = await persistInvoiceFromForm();
+    if(!inv) return;
+    await fillPrintArea(inv);
+    const cust = customers.find(c=>c.id===inv.customerId);
+    await shareInvoicePdfWhatsApp(inv.number, cust ? cust.phone : '', inv.customerName);
     resetInvoiceForm();
     renderInvoicesList();
     renderReport();
@@ -1162,38 +1364,115 @@
       .then(()=>new Promise(resolve=>setTimeout(resolve, 120)));
   }
 
-  async function exportInvoiceToPdf(invoiceNumber){
-    try{
-      const node = document.getElementById('printArea');
-      const canvas = await html2canvas(node, {scale:2, backgroundColor:'#ffffff', useCORS:true});
-      const imgData = canvas.toDataURL('image/png');
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p','pt','a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth;
-      const imgHeight = canvas.height * imgWidth / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+  async function buildInvoicePdf(){
+    const node = document.getElementById('printArea');
+    const canvas = await html2canvas(node, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','pt','a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData,'PNG',0,position,imgWidth,imgHeight);
+    heightLeft -= pageHeight;
+    while(heightLeft > 0){
+      position = heightLeft - imgHeight;
+      pdf.addPage();
       pdf.addImage(imgData,'PNG',0,position,imgWidth,imgHeight);
       heightLeft -= pageHeight;
-      while(heightLeft > 0){
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData,'PNG',0,position,imgWidth,imgHeight);
-        heightLeft -= pageHeight;
-      }
+    }
+    return pdf;
+  }
+
+  async function exportInvoiceToPdf(invoiceNumber){
+    try{
+      const pdf = await buildInvoicePdf();
       pdf.save(`فاکتور-${invoiceNumber}.pdf`);
     }catch(e){
       toast('خطا در ساخت PDF');
     }
   }
 
+  function normalizeIranPhoneForWhatsapp(phone){
+    let p = toLatinDigits(phone||'').replace(/[^\d]/g,'');
+    if(!p) return '';
+    if(p.startsWith('0')) p = '98' + p.slice(1);
+    else if(p.startsWith('9') && p.length===10) p = '98' + p;
+    return p;
+  }
+
+  async function shareInvoicePdfWhatsApp(invoiceNumber, customerPhone, customerName){
+    let pdf;
+    try{
+      pdf = await buildInvoicePdf();
+    }catch(e){
+      toast('خطا در ساخت فاکتور');
+      return;
+    }
+    const fileName = `فاکتور-${invoiceNumber}.pdf`;
+    const shareText = `فاکتور ${invoiceNumber}${customerName ? ' — ' + customerName : ''}`;
+
+    if(navigator.share && navigator.canShare){
+      try{
+        const blob = pdf.output('blob');
+        const file = new File([blob], fileName, {type:'application/pdf'});
+        if(navigator.canShare({files:[file]})){
+          await navigator.share({ files:[file], title: fileName, text: shareText });
+          return;
+        }
+      }catch(e){
+        if(e && e.name === 'AbortError') return; // user cancelled the share sheet — not an error
+        // otherwise fall through to the manual WhatsApp fallback below
+      }
+    }
+    // fallback for browsers without file-sharing support: download the PDF, then open a WhatsApp chat to attach it manually
+    pdf.save(fileName);
+    const waPhone = normalizeIranPhoneForWhatsapp(customerPhone);
+    const waText = encodeURIComponent(shareText + ' — فایل PDF دانلود شد، لطفاً آن را همینجا پیوست کنید.');
+    const waUrl = waPhone ? `https://wa.me/${waPhone}?text=${waText}` : `https://wa.me/?text=${waText}`;
+    window.open(waUrl, '_blank');
+    toast('مرورگرتان اشتراک‌گذاری مستقیم فایل را پشتیبانی نمی‌کند — PDF دانلود شد، در واتس‌اپ پیوستش کنید.');
+  }
+
+  function populateInvoiceStoreFilter(){
+    const sel = $('invoiceStoreFilter');
+    const current = sel.value || 'همه';
+    sel.innerHTML = '<option value="همه">همه فروشگاه‌ها</option>' +
+      stores.map(s=>`<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
+    sel.value = Array.from(sel.options).some(o=>o.value===current) ? current : 'همه';
+  }
+
   function renderInvoicesList(){
+    populateInvoiceStoreFilter();
+    const searchText = ($('invoiceSearchInput').value || '').trim();
+    const storeFilter = $('invoiceStoreFilter').value;
+    const sortOrder = $('invoiceSortOrder').value;
+
+    let list = invoices.filter(inv=>{
+      if(storeFilter!=='همه' && inv.storeName!==storeFilter) return false;
+      if(searchText){
+        const hay = `${inv.customerName||''} ${inv.number||''} ${inv.storeName||''}`;
+        if(!hay.includes(searchText)) return false;
+      }
+      return true;
+    });
+    list.sort((a,b)=>{
+      if(a.date !== b.date) return sortOrder==='asc' ? (a.date<b.date?-1:1) : (a.date>b.date?-1:1);
+      return sortOrder==='asc' ? (a.number<b.number?-1:1) : (a.number>b.number?-1:1);
+    });
+
     const tbody = $('invoicesList');
     tbody.innerHTML = '';
-    $('invoicesEmpty').style.display = invoices.length ? 'none' : 'block';
-    [...invoices].reverse().forEach(inv=>{
+    $('invoicesEmpty').style.display = list.length ? 'none' : 'block';
+    if(!list.length && invoices.length){
+      $('invoicesEmpty').textContent = 'با این جستجو/فیلتر فاکتوری پیدا نشد.';
+    } else {
+      $('invoicesEmpty').textContent = 'هنوز فاکتوری ثبت نشده است.';
+    }
+    list.forEach(inv=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${escapeHtml(inv.number)}</td>
@@ -1201,8 +1480,9 @@
         <td>${escapeHtml(inv.storeName||'—')}</td>
         <td>${escapeHtml(inv.customerName)}</td>
         <td class="num">${fmt(inv.total)} تومان</td>
-        <td style="white-space:nowrap;display:flex;gap:6px;">
+        <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap;">
           <button class="btn ghost sm" data-act="pdf">دانلود PDF</button>
+          <button class="btn ghost sm" data-act="whatsapp">واتس‌اپ</button>
           <button class="btn ghost sm" data-act="edit">ویرایش</button>
           <button class="btn danger sm" data-act="del">حذف</button>
         </td>
@@ -1210,6 +1490,11 @@
       tr.querySelector('[data-act=pdf]').addEventListener('click', async ()=>{
         await fillPrintArea(inv);
         await exportInvoiceToPdf(inv.number);
+      });
+      tr.querySelector('[data-act=whatsapp]').addEventListener('click', async ()=>{
+        await fillPrintArea(inv);
+        const cust = customers.find(c=>c.id===inv.customerId);
+        await shareInvoicePdfWhatsApp(inv.number, cust ? cust.phone : '', inv.customerName);
       });
       tr.querySelector('[data-act=edit]').addEventListener('click', ()=>{
         loadInvoiceIntoForm(inv);
@@ -1225,16 +1510,21 @@
       tbody.appendChild(tr);
     });
   }
+  $('invoiceSearchInput').addEventListener('input', renderInvoicesList);
+  $('invoiceStoreFilter').addEventListener('change', renderInvoicesList);
+  $('invoiceSortOrder').addEventListener('change', renderInvoicesList);
 
   $('addCustomerBtn').addEventListener('click', async ()=>{
     const name = $('custName').value.trim();
     const phone = $('custPhone').value.trim();
     const catVal = $('custCategory').value;
     const category = catVal==='__new__' ? '' : catVal;
+    const city = $('custCity').value.trim();
+    const isPartner = $('custIsPartner').checked;
     if(!name){ toast('نام مشتری را وارد کنید'); return; }
-    customers.push({id:uid(), name, phone, category});
+    customers.push({id:uid(), name, phone, category, city, isPartner});
     await saveKey('customers', customers);
-    $('custName').value=''; $('custPhone').value='';
+    $('custName').value=''; $('custPhone').value=''; $('custCity').value=''; $('custIsPartner').checked = false;
     populateCategorySelect($('custCategory'), '');
     refreshCustomerDatalists();
     renderCustomers();
@@ -1256,9 +1546,12 @@
         if(!name) return;
         const phone = String(r['شماره تماس']||r['شماره']||r['Phone']||'').trim();
         const category = String(r['دسته‌بندی']||r['دسته بندی']||r['Category']||'').trim();
+        const city = String(r['شهر']||r['City']||'').trim();
+        const typeRaw = String(r['نوع مشتری']||r['نوع']||r['Type']||'').trim();
+        const isPartner = /همکار|partner/i.test(typeRaw);
         const dup = customers.some(c=>c.name===name && (c.phone||'')===phone);
         if(dup) return;
-        customers.push({id:uid(), name, phone, category});
+        customers.push({id:uid(), name, phone, category, city, isPartner});
         if(category && !categories.includes(category)) categories.push(category);
         added++;
       });
@@ -1275,10 +1568,21 @@
     e.target.value = '';
   });
 
+  function renderFilterCustomerCityOptions(){
+    const sel = $('filterCustomerCity');
+    const current = sel.value || 'همه';
+    const cities = Array.from(new Set(customers.map(c=>c.city).filter(Boolean))).sort((a,b)=>a.localeCompare(b,'fa'));
+    sel.innerHTML = '<option value="همه">همه شهرها</option>' + cities.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    sel.value = Array.from(sel.options).some(o=>o.value===current) ? current : 'همه';
+  }
+
   function renderCustomers(){
     renderFilterCategoryOptions();
+    renderFilterCustomerCityOptions();
     const filterSel = $('filterCategory');
     const filter = filterSel.value;
+    const cityFilter = $('filterCustomerCity').value;
+    const typeFilter = $('filterCustomerType').value;
     const area = $('customersListArea');
     area.innerHTML = '';
     $('customersEmpty').style.display = customers.length ? 'none' : 'block';
@@ -1287,6 +1591,9 @@
     customers.forEach(c=>{
       const cat = c.category || 'بدون دسته‌بندی';
       if(filter!=='همه' && cat!==filter) return;
+      if(cityFilter!=='همه' && (c.city||'')!==cityFilter) return;
+      if(typeFilter==='partner' && !c.isPartner) return;
+      if(typeFilter==='retail' && c.isPartner) return;
       groups[cat] = groups[cat] || [];
       groups[cat].push(c);
     });
@@ -1298,11 +1605,20 @@
       groups[cat].forEach(c=>{
         const card = document.createElement('div');
         card.className = 'cust-card';
+        const sub = [c.phone||'—', c.city].filter(Boolean).join(' — ');
         card.innerHTML = `
-          <div class="info"><b>${escapeHtml(c.name)}</b><span>${escapeHtml(c.phone||'—')}</span></div>
-          <button class="btn danger sm" data-id="${c.id}">حذف</button>
+          <div class="info"><b>${escapeHtml(c.name)}</b><span>${escapeHtml(sub)}</span></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button type="button" class="badge type-toggle" data-id="${c.id}" style="cursor:pointer;border:none;font-family:inherit;${c.isPartner ? 'background:var(--accent);color:#1B1200;' : ''}">${c.isPartner ? 'همکار' : 'خریدار خرد'}</button>
+            <button class="btn danger sm" data-id="${c.id}">حذف</button>
+          </div>
         `;
-        card.querySelector('button').addEventListener('click', async ()=>{
+        card.querySelector('.type-toggle').addEventListener('click', async ()=>{
+          c.isPartner = !c.isPartner;
+          await saveKey('customers', customers);
+          renderCustomers();
+        });
+        card.querySelector('.btn.danger').addEventListener('click', async ()=>{
           customers = customers.filter(x=>x.id!==c.id);
           await saveKey('customers', customers);
           refreshCustomerDatalists();
@@ -1315,10 +1631,24 @@
     });
   }
   $('filterCategory').addEventListener('change', renderCustomers);
+  $('filterCustomerCity').addEventListener('change', renderCustomers);
+  $('filterCustomerType').addEventListener('change', renderCustomers);
 
   $('exportCustomersBtn').addEventListener('click', ()=>{
     if(!customers.length){ toast('مشتری‌ای برای خروجی وجود ندارد'); return; }
-    const rows = customers.map(c=>({ 'نام مشتری': c.name, 'شماره تماس': c.phone||'', 'دسته‌بندی': c.category||'' }));
+    const catFilter = $('filterCategory').value;
+    const cityFilter = $('filterCustomerCity').value;
+    const typeFilter = $('filterCustomerType').value;
+    const filtered = customers.filter(c=>{
+      const cat = c.category || 'بدون دسته‌بندی';
+      if(catFilter!=='همه' && cat!==catFilter) return false;
+      if(cityFilter!=='همه' && (c.city||'')!==cityFilter) return false;
+      if(typeFilter==='partner' && !c.isPartner) return false;
+      if(typeFilter==='retail' && c.isPartner) return false;
+      return true;
+    });
+    if(!filtered.length){ toast('با این فیلترها مشتری‌ای پیدا نشد'); return; }
+    const rows = filtered.map(c=>({ 'نام مشتری': c.name, 'شماره تماس': c.phone||'', 'دسته‌بندی': c.category||'', 'شهر': c.city||'', 'نوع مشتری': c.isPartner ? 'همکار' : 'خریدار خرد' }));
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'مشتریان');
@@ -1412,6 +1742,172 @@
     });
   }
 
+  // ================= PRODUCTS VIEW =================
+  let editingProductId = null;
+
+  function resetProductForm(){
+    editingProductId = null;
+    $('productNameInput').value = '';
+    $('productPriceInput').value = '';
+    populateCategorySelect($('productCategorySelect'), '');
+    $('productFormTitle').textContent = 'افزودن محصول جدید';
+    $('saveProductBtn').textContent = 'ذخیره محصول';
+    $('cancelEditProductBtn').style.display = 'none';
+  }
+  $('cancelEditProductBtn').addEventListener('click', resetProductForm);
+
+  $('saveProductBtn').addEventListener('click', async ()=>{
+    const name = $('productNameInput').value.trim();
+    if(!name){ toast('نام محصول را وارد کنید'); return; }
+    const catVal = $('productCategorySelect').value;
+    const category = catVal==='__new__' ? '' : catVal;
+    const price = parseFloat($('productPriceInput').value) || 0;
+
+    if(editingProductId){
+      const p = products.find(x=>x.id===editingProductId);
+      if(!p){ resetProductForm(); return; }
+      if(products.some(x=>x.id!==editingProductId && x.name===name)){ toast('محصولی با این نام قبلاً ثبت شده'); return; }
+      const oldName = p.name;
+      p.name = name; p.category = category; p.price = price;
+      if(oldName !== name){
+        let changed = false;
+        invoices.forEach(inv=>{
+          (inv.items||[]).forEach(it=>{ if(it.name === oldName){ it.name = name; changed = true; } });
+        });
+        if(changed) await saveKey('invoices', invoices);
+      }
+    } else {
+      if(products.some(x=>x.name===name)){ toast('محصولی با این نام قبلاً ثبت شده'); return; }
+      products.push({id:uid(), name, category, price});
+    }
+    await saveKey('products', products);
+    resetProductForm();
+    renderProductsList();
+    refreshProductDatalist();
+    renderReport();
+    renderInvoicesList();
+    toast(editingProductId ? 'محصول به‌روزرسانی شد' : 'محصول اضافه شد');
+  });
+
+  function renderFilterProductCategoryOptions(){
+    const filterSel = $('filterProductCategory');
+    const currentFilter = filterSel.value || 'همه';
+    filterSel.innerHTML = '<option value="همه">همه دسته‌بندی‌ها</option>' +
+      categories.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    filterSel.value = Array.from(filterSel.options).some(o=>o.value===currentFilter) ? currentFilter : 'همه';
+  }
+
+  function renderProductsList(){
+    renderFilterProductCategoryOptions();
+    const filter = $('filterProductCategory').value;
+    const area = $('productsListArea');
+    area.innerHTML = '';
+    const filtered = products.filter(p=>{
+      const cat = p.category || 'بدون دسته‌بندی';
+      return filter==='همه' || cat===filter;
+    });
+    $('productsEmpty').style.display = filtered.length ? 'none' : 'block';
+
+    const groups = {};
+    filtered.forEach(p=>{
+      const cat = p.category || 'بدون دسته‌بندی';
+      groups[cat] = groups[cat] || [];
+      groups[cat].push(p);
+    });
+
+    Object.keys(groups).sort((a,b)=>a.localeCompare(b,'fa')).forEach(cat=>{
+      const g = document.createElement('div');
+      g.className = 'customer-cat-group';
+      g.innerHTML = `<h3>${escapeHtml(cat)} <span class="badge">${groups[cat].length}</span></h3>`;
+      groups[cat].sort((a,b)=>a.name.localeCompare(b.name,'fa')).forEach(p=>{
+        const card = document.createElement('div');
+        card.className = 'cust-card';
+        card.innerHTML = `
+          <div class="info"><b>${escapeHtml(p.name)}</b><span>${fmt(p.price)} تومان</span></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn ghost sm" data-act="edit">ویرایش</button>
+            <button class="btn danger sm" data-act="del">حذف</button>
+          </div>
+        `;
+        card.querySelector('[data-act=edit]').addEventListener('click', ()=>{
+          editingProductId = p.id;
+          $('productNameInput').value = p.name;
+          populateCategorySelect($('productCategorySelect'), p.category||'');
+          $('productPriceInput').value = p.price;
+          $('productFormTitle').textContent = 'ویرایش محصول';
+          $('saveProductBtn').textContent = 'به‌روزرسانی محصول';
+          $('cancelEditProductBtn').style.display = 'inline-flex';
+          window.scrollTo(0,0);
+        });
+        card.querySelector('[data-act=del]').addEventListener('click', async ()=>{
+          if(!window.confirm('این محصول از لیست پیشنهادها حذف می‌شود (فاکتورهای قبلی که قبلاً ثبت شده‌اند دست‌نخورده می‌مانند). ادامه می‌دهید؟')) return;
+          products = products.filter(x=>x.id!==p.id);
+          await saveKey('products', products);
+          if(editingProductId===p.id) resetProductForm();
+          renderProductsList();
+          refreshProductDatalist();
+          toast('محصول حذف شد');
+        });
+        g.appendChild(card);
+      });
+      area.appendChild(g);
+    });
+  }
+  $('filterProductCategory').addEventListener('change', renderProductsList);
+
+  $('exportProductsBtn').addEventListener('click', ()=>{
+    if(!products.length){ toast('محصولی برای خروجی وجود ندارد'); return; }
+    const filter = $('filterProductCategory').value;
+    const filtered = products.filter(p=>{
+      const cat = p.category || 'بدون دسته‌بندی';
+      return filter==='همه' || cat===filter;
+    });
+    if(!filtered.length){ toast('با این فیلتر محصولی پیدا نشد'); return; }
+    const rows = filtered.map(p=>({ 'نام محصول': p.name, 'دسته‌بندی': p.category||'', 'آخرین قیمت (تومان)': p.price }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'محصولات');
+    XLSX.writeFile(wb, 'محصولات-کارانیک.xlsx');
+  });
+
+  $('backupBtn').addEventListener('click', ()=>{
+    if(!customers.length && !invoices.length && !products.length){ toast('هنوز اطلاعاتی برای پشتیبان‌گیری وجود ندارد'); return; }
+    const wb = XLSX.utils.book_new();
+
+    const custRows = customers.map(c=>({ 'نام مشتری': c.name, 'شماره تماس': c.phone||'', 'دسته‌بندی': c.category||'', 'شهر': c.city||'', 'نوع مشتری': c.isPartner ? 'همکار' : 'خریدار خرد' }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(custRows.length?custRows:[{'نام مشتری':''}]), 'مشتریان');
+
+    const prodRows = products.map(p=>({ 'نام محصول': p.name, 'دسته‌بندی': p.category||'', 'آخرین قیمت': p.price }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prodRows.length?prodRows:[{'نام محصول':''}]), 'محصولات');
+
+    const invRows = invoices.map(inv=>({
+      'شماره فاکتور': inv.number, 'تاریخ': toJalali(inv.date), 'فروشگاه': inv.storeName||'',
+      'مشتری': inv.customerName, 'مبلغ کل': inv.total, 'توضیحات': inv.notes||''
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(invRows.length?invRows:[{'شماره فاکتور':''}]), 'فاکتورها');
+
+    const itemRows = [];
+    invoices.forEach(inv=>{
+      (inv.items||[]).forEach(it=>{
+        itemRows.push({
+          'شماره فاکتور': inv.number, 'تاریخ': toJalali(inv.date), 'نام کالا': it.name,
+          'توضیحات': it.desc||'', 'تعداد': it.qty, 'قیمت واحد': it.price, 'جمع': it.qty*it.price
+        });
+      });
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(itemRows.length?itemRows:[{'شماره فاکتور':''}]), 'اقلام فاکتورها');
+
+    const storeRows = stores.map(s=>({ 'نام فروشگاه': s.name, 'شماره تماس': s.phone||'', 'توضیح': s.sub||'' }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(storeRows.length?storeRows:[{'نام فروشگاه':''}]), 'فروشگاه‌ها');
+
+    const catRows = categories.map(c=>({ 'نام دسته‌بندی': c }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(catRows.length?catRows:[{'نام دسته‌بندی':''}]), 'دسته‌بندی‌ها');
+
+    const todayISO = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `پشتیبان-کارانیک-${todayISO}.xlsx`);
+    toast('فایل پشتیبان دانلود شد');
+  });
+
   function populateStoreSelect(){
     const sel = $('invStoreSelect');
     const prev = sel.value;
@@ -1504,14 +2000,11 @@
       buckets[key].count++; buckets[key].total += inv.total;
     });
     const periodRows = Object.entries(buckets).sort((a,b)=> a[0] < b[0] ? 1 : -1);
-    const periodBody = $('periodReportBody');
-    periodBody.innerHTML = '';
+    const periodHead = '<div class="rg-head">بازه</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (تومان)</div>';
     $('periodReportEmpty').style.display = periodRows.length ? 'none' : 'block';
-    periodRows.forEach(([key,d])=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${escapeHtml(periodLabel(key,period))}</td><td class="num">${d.count.toLocaleString('fa-IR')}</td><td class="num">${fmt(d.total)}</td>`;
-      periodBody.appendChild(tr);
-    });
+    $('periodReportGrid').innerHTML = periodHead + periodRows.map(([key,d])=>
+      `<div>${escapeHtml(periodLabel(key,period))}</div><div class="num">${d.count.toLocaleString('fa-IR')}</div><div class="num">${fmt(d.total)}</div>`
+    ).join('');
 
     const storeBuckets = {};
     list.forEach(inv=>{
@@ -1520,14 +2013,27 @@
       storeBuckets[key].count++; storeBuckets[key].total += inv.total;
     });
     const storeRows = Object.entries(storeBuckets).sort((a,b)=>b[1].total-a[1].total);
-    const storeBody = $('storeReportBody');
-    storeBody.innerHTML = '';
+    const storeHead = '<div class="rg-head">فروشگاه</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (تومان)</div>';
     $('storeReportEmpty').style.display = storeRows.length ? 'none' : 'block';
-    storeRows.forEach(([name,d])=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${escapeHtml(name)}</td><td class="num">${d.count.toLocaleString('fa-IR')}</td><td class="num">${fmt(d.total)}</td>`;
-      storeBody.appendChild(tr);
+    $('storeReportGrid').innerHTML = storeHead + storeRows.map(([name,d])=>
+      `<div>${escapeHtml(name)}</div><div class="num">${d.count.toLocaleString('fa-IR')}</div><div class="num">${fmt(d.total)}</div>`
+    ).join('');
+
+    const customerCityMap = {};
+    customers.forEach(c=>{ customerCityMap[c.id] = c.city || ''; });
+    const cityBuckets = {};
+    list.forEach(inv=>{
+      const city = customerCityMap[inv.customerId];
+      if(!city) return; // skip customers with no city on file
+      cityBuckets[city] = cityBuckets[city] || {count:0, total:0};
+      cityBuckets[city].count++; cityBuckets[city].total += inv.total;
     });
+    const cityRows = Object.entries(cityBuckets).sort((a,b)=>b[1].total-a[1].total);
+    const cityHead = '<div class="rg-head">شهر</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (تومان)</div>';
+    $('cityReportEmpty').style.display = cityRows.length ? 'none' : 'block';
+    $('cityReportGrid').innerHTML = cityHead + cityRows.map(([city,d])=>
+      `<div>${escapeHtml(city)}</div><div class="num">${d.count.toLocaleString('fa-IR')}</div><div class="num">${fmt(d.total)}</div>`
+    ).join('');
 
     const perProduct = {};
     list.forEach(inv=>{
@@ -1538,16 +2044,39 @@
       });
     });
     const rows = Object.entries(perProduct).sort((a,b)=>b[1].revenue-a[1].revenue);
-    const tbody = $('productReportBody');
-    tbody.innerHTML = '';
+    const productHead = '<div class="rg-head">نام محصول</div><div class="rg-head num">تعداد فروش رفته</div><div class="rg-head num">جمع فروش (تومان)</div>';
     $('reportEmpty').style.display = rows.length ? 'none' : 'block';
-    rows.forEach(([name, d])=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${escapeHtml(name)}</td><td class="num">${d.qty.toLocaleString('fa-IR')}</td><td class="num">${fmt(d.revenue)}</td>`;
-      tbody.appendChild(tr);
-    });
+    $('productReportGrid').innerHTML = productHead + rows.map(([name, d])=>
+      `<div>${escapeHtml(name)}</div><div class="num">${d.qty.toLocaleString('fa-IR')}</div><div class="num">${fmt(d.revenue)}</div>`
+    ).join('');
     window._reportRows = rows;
     window._reportSummary = {total, count:list.length};
+
+    // best-selling product per category (by revenue, and by quantity)
+    const productCategoryMap = {};
+    products.forEach(p=>{ productCategoryMap[p.name] = p.category || ''; });
+    const catProduct = {};
+    list.forEach(inv=>{
+      inv.items.forEach(it=>{
+        const cat = productCategoryMap[it.name];
+        if(!cat) return; // skip products with no assigned category
+        catProduct[cat] = catProduct[cat] || {};
+        catProduct[cat][it.name] = catProduct[cat][it.name] || {qty:0, revenue:0};
+        catProduct[cat][it.name].qty += it.qty;
+        catProduct[cat][it.name].revenue += it.qty*it.price;
+      });
+    });
+    const catBestRows = Object.entries(catProduct).map(([cat, prods])=>{
+      const entries = Object.entries(prods);
+      const byRevenue = entries.slice().sort((a,b)=>b[1].revenue-a[1].revenue)[0];
+      const byQty = entries.slice().sort((a,b)=>b[1].qty-a[1].qty)[0];
+      return {cat, revName: byRevenue[0], revAmount: byRevenue[1].revenue, qtyName: byQty[0], qtyAmount: byQty[1].qty};
+    }).sort((a,b)=> a.cat.localeCompare(b.cat,'fa'));
+    const catBestHead = '<div class="rg-head">دسته‌بندی</div><div class="rg-head">پرفروش‌ترین (مبلغ)</div><div class="rg-head num">مبلغ</div><div class="rg-head">پرفروش‌ترین (تعداد)</div><div class="rg-head num">تعداد</div>';
+    $('categoryBestEmpty').style.display = catBestRows.length ? 'none' : 'block';
+    $('categoryBestGrid').innerHTML = catBestHead + catBestRows.map(r=>
+      `<div>${escapeHtml(r.cat)}</div><div>${escapeHtml(r.revName)}</div><div class="num">${fmt(r.revAmount)}</div><div>${escapeHtml(r.qtyName)}</div><div class="num">${r.qtyAmount.toLocaleString('fa-IR')}</div>`
+    ).join('');
   }
 
   $('exportReportBtn').addEventListener('click', ()=>{
@@ -1572,8 +2101,10 @@
     populateAllCategorySelects();
     renderCategoryChips();
     refreshCustomerDatalists();
+    refreshProductDatalist();
     populateStoreSelect();
     renderStoresList();
+    renderProductsList();
     resetInvoiceForm();
     renderCustomers();
     renderInvoicesList();
@@ -1582,6 +2113,12 @@
   function showAuthScreen(){
     $('authScreen').style.display = 'flex';
     $('mainApp').style.display = 'none';
+    showAuthPanel('login');
+  }
+  function showAuthPanel(name){
+    $('authPanelLogin').style.display = name==='login' ? 'block' : 'none';
+    $('authPanelForgot').style.display = name==='forgot' ? 'block' : 'none';
+    $('authPanelNewPassword').style.display = name==='newpass' ? 'block' : 'none';
   }
 
   $('loginBtn').addEventListener('click', doLogin);
@@ -1602,6 +2139,50 @@
     await sb.auth.signOut();
     currentUser = null;
     showAuthScreen();
+  });
+
+  // ---------- forgot password ----------
+  $('showForgotPasswordBtn').addEventListener('click', ()=>{
+    $('forgotError').textContent = '';
+    $('forgotEmail').value = $('authEmail').value.trim();
+    showAuthPanel('forgot');
+  });
+  $('backToLoginBtn').addEventListener('click', ()=> showAuthPanel('login'));
+
+  $('sendResetBtn').addEventListener('click', async ()=>{
+    const email = $('forgotEmail').value.trim();
+    $('forgotError').textContent = '';
+    if(!email){ $('forgotError').textContent = 'ایمیل را وارد کنید'; return; }
+    $('sendResetBtn').textContent = 'در حال ارسال...';
+    const redirectTo = window.location.origin + window.location.pathname;
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+    $('sendResetBtn').textContent = 'ارسال لینک بازیابی';
+    if(error){ $('forgotError').textContent = 'خطا در ارسال — دوباره امتحان کنید'; return; }
+    toast('لینک بازیابی به ایمیلتان ارسال شد — صندوق ورودی (و Spam) را چک کنید');
+    showAuthPanel('login');
+  });
+
+  // ---------- set new password (after clicking the emailed recovery link) ----------
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event === 'PASSWORD_RECOVERY'){
+      showAuthScreen();
+      showAuthPanel('newpass');
+    }
+  });
+
+  $('saveNewPasswordBtn').addEventListener('click', async ()=>{
+    const p1 = $('newPassword1').value;
+    const p2 = $('newPassword2').value;
+    $('newPasswordError').textContent = '';
+    if(!p1 || p1.length<6){ $('newPasswordError').textContent = 'رمز عبور باید حداقل ۶ کاراکتر باشد'; return; }
+    if(p1 !== p2){ $('newPasswordError').textContent = 'رمز عبور و تکرار آن یکسان نیستند'; return; }
+    $('saveNewPasswordBtn').textContent = 'در حال ذخیره...';
+    const { data, error } = await sb.auth.updateUser({ password: p1 });
+    $('saveNewPasswordBtn').textContent = 'ذخیره رمز جدید';
+    if(error){ $('newPasswordError').textContent = 'خطا در ذخیره رمز — دوباره امتحان کنید'; return; }
+    currentUser = data.user;
+    toast('رمز عبور با موفقیت تغییر کرد');
+    await startApp();
   });
 
   (async function init(){
