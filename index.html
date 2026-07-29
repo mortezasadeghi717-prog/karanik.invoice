@@ -113,6 +113,9 @@
   .cust-card .info b{font-size:14px;}
   .cust-card .info span{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
 
+  .ac-dropdown{display:none;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 26px rgba(0,0,0,0.14);max-height:230px;overflow-y:auto;z-index:5000;}
+  .ac-item{padding:9px 13px;font-size:13.5px;color:var(--ink);cursor:pointer;}
+  .ac-item:hover, .ac-item.active{background:#F1F5F4;}
   .chip{display:inline-flex;align-items:center;gap:7px;background:#EAF1F0;border:1px solid var(--line);border-radius:20px;padding:6px 8px 6px 14px;font-size:12.5px;color:var(--primary);font-weight:600;}
   .chip button{border:none;background:#fff;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
   .chip button:hover{background:#FBEEEE;color:var(--danger);}
@@ -145,7 +148,7 @@
   .picker-item-new{color:var(--accent);font-weight:700;font-size:14.5px;}
   .picker-empty{padding:30px 0;text-align:center;color:var(--muted);font-size:13.5px;}
 
-  #printArea{ display:block;position:fixed;top:0;left:-99999px;width:794px;background:#fff; }
+  #printArea{ display:block;position:fixed;top:0;left:-99999px;background:#fff; }
   .inv-doc{
     width:794px;padding:56px 60px;background:var(--p-bg,#fff);color:var(--p-ink,#1D1D1F);
     font-family:'Vazirmatn',Tahoma,sans-serif;
@@ -164,6 +167,77 @@
   .inv-doc.theme-forest .total-row.grand{ background:var(--p-line);border-top:none;border-radius:10px;padding:12px 16px; }
   .inv-doc.theme-royal .doc-title{ font-style:normal;letter-spacing:0; }
   .inv-doc.theme-royal .inv-divider{ height:2px;background:repeating-linear-gradient(90deg,var(--p-accent) 0 10px, transparent 10px 16px); }
+
+  /* ===== Theme: Classic Ledger — fully bordered, symmetrical, traditional paper-form layout ===== */
+  .inv-doc.theme-ledger{
+    --p-ink:#1A1A1A;--p-muted:#4A4A4A;--p-line:#1A1A1A;--p-accent:#1A1A1A;--p-bg:#fff;
+    border:3px double #1A1A1A;padding:32px 36px;
+  }
+  .inv-doc.theme-ledger .inv-top{ flex-direction:column;align-items:center;text-align:center; }
+  .inv-doc.theme-ledger .inv-brand{ flex-direction:column;gap:4px; }
+  .inv-doc.theme-ledger .inv-label{ text-align:center;margin-top:14px; }
+  .inv-doc.theme-ledger .inv-label .doc-title{ font-weight:900; }
+  .inv-doc.theme-ledger .inv-divider{ background:none;border-bottom:2px solid var(--p-accent);height:0;margin:20px 0; }
+  .inv-doc.theme-ledger .inv-parties{ border:1px solid var(--p-accent);margin-bottom:24px; }
+  .inv-doc.theme-ledger .inv-parties > div{ flex:1;padding:10px 16px; }
+  .inv-doc.theme-ledger .inv-parties > div:first-child{ border-left:1px solid var(--p-accent); }
+  .inv-doc.theme-ledger .inv-meta-right{ text-align:right; }
+  .inv-doc.theme-ledger table.inv-table{ border:1px solid var(--p-accent);border-collapse:collapse; }
+  .inv-doc.theme-ledger table.inv-table thead th{ border:1px solid var(--p-accent);background:#EFEFEF;text-align:center;padding:9px; }
+  .inv-doc.theme-ledger table.inv-table thead th.num{ text-align:center; }
+  .inv-doc.theme-ledger table.inv-table td{ border:1px solid var(--p-accent);text-align:center; }
+  .inv-doc.theme-ledger table.inv-table td.num{ text-align:center; }
+  .inv-doc.theme-ledger table.inv-table td .item-desc{ text-align:center; }
+  .inv-doc.theme-ledger .inv-totals{ margin-top:0; }
+  .inv-doc.theme-ledger .inv-totals .totals-box{ width:100%;min-width:0;border:1px solid var(--p-accent);border-top:none; }
+  .inv-doc.theme-ledger .total-row.grand{ border-top:none;justify-content:center;gap:20px; }
+  .inv-doc.theme-ledger .inv-footer{ border-top:2px double var(--p-accent); }
+
+  /* ===== Theme: Compact Receipt — narrow ticket/receipt layout, dashed dividers, centered ===== */
+  .inv-doc.theme-receipt{
+    --p-ink:#222226;--p-muted:#8A8A90;--p-line:#D8D8DC;--p-accent:#222226;--p-bg:#fff;
+    width:380px;margin:0 auto;padding:26px 22px;
+  }
+  .inv-doc.theme-receipt .inv-top{ flex-direction:column;align-items:center;text-align:center; }
+  .inv-doc.theme-receipt .inv-brand{ flex-direction:column;gap:3px; }
+  .inv-doc.theme-receipt .inv-brand img{ max-height:36px; }
+  .inv-doc.theme-receipt .inv-label{ text-align:center;margin-top:10px; }
+  .inv-doc.theme-receipt .inv-label .doc-title{ font-size:16px; }
+  .inv-doc.theme-receipt .inv-divider{ background:none;border-bottom:1px dashed var(--p-line);height:0;margin:14px 0; }
+  .inv-doc.theme-receipt .inv-parties{ flex-direction:column;gap:6px;text-align:center;margin-bottom:14px; }
+  .inv-doc.theme-receipt .inv-meta-right{ text-align:center; }
+  .inv-doc.theme-receipt table.inv-table{ font-size:11.5px; }
+  .inv-doc.theme-receipt table.inv-table thead th{ border-bottom:1px dashed var(--p-accent);font-size:10px;padding:0 0 7px; }
+  .inv-doc.theme-receipt table.inv-table td{ border-bottom:1px dashed var(--p-line);padding:8px 0; }
+  .inv-doc.theme-receipt table.inv-table td .item-desc{ font-size:10px; }
+  .inv-doc.theme-receipt .inv-totals{ justify-content:center;margin-top:16px; }
+  .inv-doc.theme-receipt .inv-totals .totals-box{ width:100%;min-width:0; }
+  .inv-doc.theme-receipt .total-row.grand{ justify-content:center;gap:14px;border-top:1px dashed var(--p-accent);font-size:15px; }
+  .inv-doc.theme-receipt .inv-footer{ border-top:1px dashed var(--p-line);font-size:10.5px; }
+
+  /* ===== Theme: Modern Commerce — big e-commerce-style order card (Amazon/Alibaba-like) ===== */
+  .inv-doc.theme-commerce{
+    --p-ink:#111827;--p-muted:#6B7280;--p-line:#E5E7EB;--p-accent:#2563EB;--p-bg:#fff;
+  }
+  .inv-doc.theme-commerce .inv-top{
+    background:var(--p-accent);padding:22px 26px;border-radius:14px;align-items:center;
+  }
+  .inv-doc.theme-commerce .inv-brand .co-name{ color:#fff;font-size:19px; }
+  .inv-doc.theme-commerce .inv-brand .co-sub{ color:#DBEAFE; }
+  .inv-doc.theme-commerce .inv-label .doc-title{ color:#fff; }
+  .inv-doc.theme-commerce .inv-label .doc-number{ color:#DBEAFE; }
+  .inv-doc.theme-commerce .inv-divider{ display:none; }
+  .inv-doc.theme-commerce .inv-parties{
+    background:#fff;border:1px solid var(--p-line);border-radius:12px;padding:16px 20px;margin-top:22px;
+  }
+  .inv-doc.theme-commerce table.inv-table{ background:#fff;border:1px solid var(--p-line);border-radius:12px;border-collapse:separate;border-spacing:0;overflow:hidden;margin-top:20px; }
+  .inv-doc.theme-commerce table.inv-table thead th{ background:#F3F4F6;padding:11px 16px;border-bottom:1px solid var(--p-line); }
+  .inv-doc.theme-commerce table.inv-table td{ padding:13px 16px; }
+  .inv-doc.theme-commerce table.inv-table tbody tr:nth-child(even) td{ background:#FAFAFB; }
+  .inv-doc.theme-commerce .inv-totals{ background:#fff;border:1px solid var(--p-line);border-radius:12px;margin-top:16px;padding:4px 20px; }
+  .inv-doc.theme-commerce .total-row.grand{ color:var(--p-accent); }
+  .inv-doc.theme-commerce .inv-notes{ background:#EFF6FF;border:1px solid #DBEAFE; }
+  .inv-doc.theme-commerce .inv-footer{ background:#F3F4F6;border-top:none;border-radius:12px;padding:14px 20px; }
   .inv-top{display:flex;justify-content:space-between;align-items:flex-start;}
   .inv-brand{display:flex;align-items:center;gap:14px;}
   .inv-brand img{max-height:46px;max-width:140px;object-fit:contain;}
@@ -347,7 +421,7 @@
         </div>
         <table class="items-table">
           <thead>
-            <tr><th style="width:18%">نام کالا</th><th style="width:26%">توضیحات</th><th class="num" style="width:10%">تعداد</th><th class="num" style="width:13%">قیمت واحد (تومان)</th><th class="num" style="width:13%">جمع</th><th style="width:20%"></th></tr>
+            <tr><th style="width:18%">نام کالا</th><th style="width:26%">توضیحات</th><th class="num" style="width:10%">تعداد</th><th class="num" style="width:13%">قیمت واحد (ریال)</th><th class="num" style="width:13%">جمع</th><th style="width:20%"></th></tr>
           </thead>
           <tbody id="itemsBody"></tbody>
         </table>
@@ -358,12 +432,13 @@
           </div>
           <div style="text-align:left;min-width:180px;">
             <div style="font-size:12.5px;color:var(--muted);">جمع کل</div>
-            <div style="font-size:24px;font-weight:800;color:var(--primary);" id="invGrandTotal">۰ تومان</div>
+            <div style="font-size:24px;font-weight:800;color:var(--primary);" id="invGrandTotal">۰ ریال</div>
           </div>
         </div>
         <div class="btnrow">
           <button class="btn accent" id="saveInvoiceBtn">ذخیره فاکتور</button>
           <button class="btn ghost" id="printInvoiceBtn">دانلود PDF فاکتور</button>
+          <button class="btn ghost" id="downloadImageBtn">دانلود عکس فاکتور</button>
           <button class="btn ghost" id="shareWhatsAppBtn">ارسال از واتس‌اپ</button>
           <button class="btn ghost" id="cancelEditInvoiceBtn" style="display:none;">لغو ویرایش</button>
         </div>
@@ -411,7 +486,7 @@
 
       <div class="panel">
         <div class="rowbetween">
-          <h2>افزودن مشتری</h2>
+          <h2 id="customerFormTitle">افزودن مشتری</h2>
           <div>
             <input type="file" id="importCustomersInput" accept=".xlsx,.xls,.csv" style="display:none;">
             <button class="btn ghost sm" id="importCustomersBtn">وارد کردن از اکسل</button>
@@ -429,7 +504,10 @@
           <input type="checkbox" id="custIsPartner" style="width:16px;height:16px;">
           این مشتری همکار (فروش عمده) است، نه خریدار خرد
         </label>
-        <div class="btnrow"><button class="btn accent" id="addCustomerBtn">افزودن مشتری</button></div>
+        <div class="btnrow">
+          <button class="btn accent" id="addCustomerBtn">افزودن مشتری</button>
+          <button class="btn ghost" id="cancelEditCustomerBtn" style="display:none;">انصراف از ویرایش</button>
+        </div>
       </div>
 
       <div class="panel">
@@ -466,7 +544,7 @@
         <div class="grid cols3">
           <div class="field"><label>نام محصول</label><input type="text" id="productNameInput" placeholder="مثلاً: خمیر سیلیکون HY-880"></div>
           <div class="field"><label>دسته‌بندی</label><select id="productCategorySelect"></select></div>
-          <div class="field"><label>آخرین قیمت (تومان)</label><input type="number" id="productPriceInput" min="0" step="1000"></div>
+          <div class="field"><label>آخرین قیمت (ریال)</label><input type="number" id="productPriceInput" min="0" step="1000"></div>
         </div>
         <div class="btnrow">
           <button class="btn accent" id="saveProductBtn">ذخیره محصول</button>
@@ -515,9 +593,9 @@
       </div>
 
       <div class="kpis">
-        <div class="kpi"><div class="label">جمع فروش</div><div class="value" id="kpiTotal">۰ تومان</div></div>
+        <div class="kpi"><div class="label">جمع فروش</div><div class="value" id="kpiTotal">۰ ریال</div></div>
         <div class="kpi"><div class="label">تعداد فاکتور</div><div class="value" id="kpiCount">۰</div></div>
-        <div class="kpi"><div class="label">میانگین هر فاکتور</div><div class="value" id="kpiAvg">۰ تومان</div></div>
+        <div class="kpi"><div class="label">میانگین هر فاکتور</div><div class="value" id="kpiAvg">۰ ریال</div></div>
       </div>
 
       <div class="panel">
@@ -598,6 +676,9 @@
             <option value="crimson">زرشکی و زغالی</option>
             <option value="forest">سبز و کرم</option>
             <option value="royal">بنفش و خاکستری</option>
+            <option value="ledger">دفتر کلاسیک — کاملاً جدولی و قاب‌دار</option>
+            <option value="receipt">رسید فشرده — باریک و سطر به سطر</option>
+            <option value="commerce">فروشگاهی مدرن — مثل آمازون و علی‌بابا</option>
           </select>
         </div>
         <div class="btnrow">
@@ -657,6 +738,7 @@
       <div>
         <span class="party-label">صورت‌حساب برای</span>
         <div class="party-name" id="p_custName"></div>
+        <div id="p_custPhone" style="font-size:12px;color:var(--p-muted);margin-top:3px;"></div>
       </div>
       <div class="inv-meta-right">
         <span class="meta-label">تاریخ صدور</span>
@@ -1060,6 +1142,49 @@
     'رفسنجان','زرند','کهنوج','شهربابک','بردسیر','عنبرآباد','منوجان','فهرج','نرماشیر','ریگان'
   ];
 
+  // Custom autocomplete dropdown — used instead of/alongside <datalist>, since datalist
+  // suggestions simply do not appear on iOS Safari (a long-standing WebKit limitation).
+  const acBox = document.createElement('div');
+  acBox.className = 'ac-dropdown';
+  document.body.appendChild(acBox);
+  let acCurrentInput = null;
+
+  function hideAutocomplete(){ acBox.style.display = 'none'; acCurrentInput = null; }
+  function attachAutocomplete(inputEl, getOptions){
+    function renderList(){
+      const q = inputEl.value.trim();
+      const all = getOptions();
+      const filtered = (q ? all.filter(v=>v.includes(q)) : all).slice(0,8);
+      if(!filtered.length){ hideAutocomplete(); return; }
+      acCurrentInput = inputEl;
+      const rect = inputEl.getBoundingClientRect();
+      acBox.style.position = 'fixed';
+      acBox.style.left = rect.left + 'px';
+      acBox.style.top = (rect.bottom + 4) + 'px';
+      acBox.style.width = rect.width + 'px';
+      acBox.style.display = 'block';
+      acBox.innerHTML = filtered.map(v=>`<div class="ac-item">${escapeHtml(v)}</div>`).join('');
+      acBox.querySelectorAll('.ac-item').forEach((el,i)=>{
+        el.addEventListener('mousedown', (e)=>{
+          e.preventDefault();
+          inputEl.value = filtered[i];
+          inputEl.dispatchEvent(new Event('input', {bubbles:true}));
+          hideAutocomplete();
+        });
+      });
+    }
+    inputEl.addEventListener('input', renderList);
+    inputEl.addEventListener('focus', renderList);
+    inputEl.addEventListener('blur', ()=>setTimeout(()=>{ if(acCurrentInput===inputEl) hideAutocomplete(); }, 150));
+  }
+  window.addEventListener('scroll', hideAutocomplete, true);
+  window.addEventListener('resize', hideAutocomplete);
+
+  function getAllCityOptions(){
+    const customCities = customers.map(c=>c.city).filter(Boolean);
+    return Array.from(new Set([...IRAN_CITIES, ...customCities])).sort((a,b)=>a.localeCompare(b,'fa'));
+  }
+
   function refreshCustomerDatalists(){
     $('customerNameList').innerHTML = customers.map(c=>`<option value="${escapeHtml(c.name)}">`).join('');
     $('customerPhoneList').innerHTML = customers.map(c=>c.phone ? `<option value="${escapeHtml(c.phone)}">` : '').join('');
@@ -1067,6 +1192,14 @@
     const allCities = Array.from(new Set([...IRAN_CITIES, ...customCities])).sort((a,b)=>a.localeCompare(b,'fa'));
     $('cityList').innerHTML = allCities.map(c=>`<option value="${escapeHtml(c)}">`).join('');
   }
+
+  attachAutocomplete($('custCity'), getAllCityOptions);
+  attachAutocomplete($('newCustCity'), getAllCityOptions);
+  attachAutocomplete($('custName'), ()=>customers.map(c=>c.name));
+  attachAutocomplete($('newCustName'), ()=>customers.map(c=>c.name));
+  attachAutocomplete($('custPhone'), ()=>customers.map(c=>c.phone).filter(Boolean));
+  attachAutocomplete($('newCustPhone'), ()=>customers.map(c=>c.phone).filter(Boolean));
+  attachAutocomplete($('productNameInput'), ()=>products.map(p=>p.name));
   function refreshProductDatalist(){
     $('productNameList').innerHTML = products.map(p=>`<option value="${escapeHtml(p.name)}">`).join('');
   }
@@ -1127,7 +1260,7 @@
     const sorted = [...customers].reverse();
     const filtered = sorted.filter(c=>{
       if(!q) return true;
-      return c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q));
+      return c.name.toLowerCase().includes(q) || (c.phone && c.phone.includes(q)) || (c.city && c.city.toLowerCase().includes(q));
     });
     if(!filtered.length){
       const empty = document.createElement('div');
@@ -1138,7 +1271,8 @@
     filtered.forEach(c=>{
       const item = document.createElement('div');
       item.className = 'picker-item';
-      item.innerHTML = `<b>${escapeHtml(c.name)}</b><span>${escapeHtml(c.phone||'')}${c.category? ' — '+escapeHtml(c.category):''}</span>`;
+      const metaParts = [c.phone||'', c.city||'', c.category||''].filter(Boolean);
+      item.innerHTML = `<b>${escapeHtml(c.name)}</b><span>${escapeHtml(metaParts.join(' — '))}</span>`;
       item.addEventListener('click', ()=>selectPickerCustomer(c.id));
       list.appendChild(item);
     });
@@ -1182,6 +1316,7 @@
         recalcTotals();
       }
     });
+    attachAutocomplete(tr.querySelector('.it-name'), ()=>products.map(p=>p.name));
     $('itemsBody').appendChild(tr);
     recalcTotals();
   }
@@ -1196,7 +1331,7 @@
       tr.querySelector('.it-linetotal').textContent = fmt(lt);
       grand += lt;
     });
-    $('invGrandTotal').textContent = fmt(grand) + ' تومان';
+    $('invGrandTotal').textContent = fmt(grand) + ' ریال';
     return grand;
   }
 
@@ -1278,7 +1413,12 @@
       const catVal = $('newCustCategory').value;
       const newCust = {id:uid(), name, phone:$('newCustPhone').value.trim(), category: catVal==='__new__' ? '' : catVal, city: $('newCustCity').value.trim(), isPartner: $('newCustIsPartner').checked};
       customers.push(newCust);
-      await saveKey('customers', customers);
+      const custSaveOk = await saveKey('customers', customers);
+      if(!custSaveOk){
+        customers.pop();
+        toast('ذخیره مشتری جدید ناموفق بود — اتصال اینترنت را بررسی و دوباره تلاش کنید');
+        return null;
+      }
       customerId = newCust.id; customerName = newCust.name;
       refreshCustomerDatalists();
     } else {
@@ -1310,10 +1450,11 @@
     const wasEditing = !!editingInvoiceId;
     const inv = await persistInvoiceFromForm();
     if(!inv) return;
-    toast(wasEditing ? 'فاکتور به‌روزرسانی شد' : 'فاکتور با موفقیت ذخیره شد');
+    toast(wasEditing ? 'فاکتور به‌روزرسانی شد' : 'فاکتور و مشتری با موفقیت ذخیره شد');
     resetInvoiceForm();
     renderInvoicesList();
     renderReport();
+    renderCustomers();
   });
 
   $('printInvoiceBtn').addEventListener('click', async ()=>{
@@ -1321,21 +1462,36 @@
     if(!inv) return;
     await fillPrintArea(inv);
     await exportInvoiceToPdf(inv.number);
-    toast('فاکتور ذخیره شد و PDF آن دانلود شد');
+    toast('فاکتور و مشتری ذخیره شد و PDF آن دانلود شد');
     resetInvoiceForm();
     renderInvoicesList();
     renderReport();
+    renderCustomers();
+  });
+
+  $('downloadImageBtn').addEventListener('click', async ()=>{
+    const inv = await persistInvoiceFromForm();
+    if(!inv) return;
+    await fillPrintArea(inv);
+    await exportInvoiceToImage(inv.number);
+    toast('فاکتور و مشتری ذخیره شد و عکس آن دانلود شد');
+    resetInvoiceForm();
+    renderInvoicesList();
+    renderReport();
+    renderCustomers();
   });
 
   $('shareWhatsAppBtn').addEventListener('click', async ()=>{
     const inv = await persistInvoiceFromForm();
     if(!inv) return;
+    toast('فاکتور و مشتری ذخیره شد — در حال آماده‌سازی برای واتس‌اپ...');
     await fillPrintArea(inv);
     const cust = customers.find(c=>c.id===inv.customerId);
     await shareInvoicePdfWhatsApp(inv.number, cust ? cust.phone : '', inv.customerName);
     resetInvoiceForm();
     renderInvoicesList();
     renderReport();
+    renderCustomers();
   });
 
   function fillPrintArea(inv){
@@ -1348,6 +1504,8 @@
     $('p_invNumber').textContent = inv.number;
     $('p_invDate').textContent = toJalali(inv.date);
     $('p_custName').textContent = inv.customerName;
+    const custForPhone = customers.find(c=>c.id===inv.customerId);
+    $('p_custPhone').textContent = custForPhone && custForPhone.phone ? custForPhone.phone : '';
     $('p_itemsBody').innerHTML = inv.items.map(it=>`
       <tr>
         <td>${escapeHtml(it.name)}${it.desc ? `<span class="item-desc">${escapeHtml(it.desc)}</span>` : ''}</td>
@@ -1356,7 +1514,7 @@
         <td class="num">${fmt(it.qty*it.price)}</td>
       </tr>
     `).join('');
-    $('p_grandTotal').textContent = fmt(inv.total) + ' تومان';
+    $('p_grandTotal').textContent = fmt(inv.total) + ' ریال';
     const notesEl = $('p_notes');
     if(inv.notes){ notesEl.textContent = inv.notes; notesEl.style.display='block'; }
     else { notesEl.textContent=''; notesEl.style.display='none'; }
@@ -1364,11 +1522,24 @@
       .then(()=>new Promise(resolve=>setTimeout(resolve, 120)));
   }
 
-  async function buildInvoicePdf(){
+  async function captureInvoiceCanvas(){
     const node = document.getElementById('printArea');
-    const canvas = await html2canvas(node, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    return html2canvas(node, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+  }
+
+  async function buildInvoicePdf(){
+    const canvas = await captureInvoiceCanvas();
     const imgData = canvas.toDataURL('image/png');
     const { jsPDF } = window.jspdf;
+    const isReceipt = $('invDocRoot').classList.contains('theme-receipt');
+    if(isReceipt){
+      // size the PDF page to the receipt's own narrow width instead of stretching it across an A4 page
+      const wPt = canvas.width * 72/96/2;
+      const hPt = canvas.height * 72/96/2;
+      const pdf = new jsPDF({ orientation: hPt>=wPt?'p':'l', unit:'pt', format:[wPt, hPt] });
+      pdf.addImage(imgData,'PNG',0,0,wPt,hPt);
+      return pdf;
+    }
     const pdf = new jsPDF('p','pt','a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -1396,6 +1567,18 @@
     }
   }
 
+  async function exportInvoiceToImage(invoiceNumber){
+    try{
+      const canvas = await captureInvoiceCanvas();
+      const link = document.createElement('a');
+      link.download = `فاکتور-${invoiceNumber}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }catch(e){
+      toast('خطا در ساخت عکس فاکتور');
+    }
+  }
+
   function normalizeIranPhoneForWhatsapp(phone){
     let p = toLatinDigits(phone||'').replace(/[^\d]/g,'');
     if(!p) return '';
@@ -1405,20 +1588,20 @@
   }
 
   async function shareInvoicePdfWhatsApp(invoiceNumber, customerPhone, customerName){
-    let pdf;
+    let canvas;
     try{
-      pdf = await buildInvoicePdf();
+      canvas = await captureInvoiceCanvas();
     }catch(e){
       toast('خطا در ساخت فاکتور');
       return;
     }
-    const fileName = `فاکتور-${invoiceNumber}.pdf`;
+    const fileName = `فاکتور-${invoiceNumber}.png`;
     const shareText = `فاکتور ${invoiceNumber}${customerName ? ' — ' + customerName : ''}`;
 
     if(navigator.share && navigator.canShare){
       try{
-        const blob = pdf.output('blob');
-        const file = new File([blob], fileName, {type:'application/pdf'});
+        const blob = await new Promise(res=>canvas.toBlob(res, 'image/png'));
+        const file = new File([blob], fileName, {type:'image/png'});
         if(navigator.canShare({files:[file]})){
           await navigator.share({ files:[file], title: fileName, text: shareText });
           return;
@@ -1428,13 +1611,16 @@
         // otherwise fall through to the manual WhatsApp fallback below
       }
     }
-    // fallback for browsers without file-sharing support: download the PDF, then open a WhatsApp chat to attach it manually
-    pdf.save(fileName);
+    // fallback for browsers without file-sharing support: download the PNG, then open a WhatsApp chat to attach it manually
+    const link = document.createElement('a');
+    link.download = fileName;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
     const waPhone = normalizeIranPhoneForWhatsapp(customerPhone);
-    const waText = encodeURIComponent(shareText + ' — فایل PDF دانلود شد، لطفاً آن را همینجا پیوست کنید.');
+    const waText = encodeURIComponent(shareText + ' — عکس فاکتور دانلود شد، لطفاً آن را همینجا پیوست کنید.');
     const waUrl = waPhone ? `https://wa.me/${waPhone}?text=${waText}` : `https://wa.me/?text=${waText}`;
     window.open(waUrl, '_blank');
-    toast('مرورگرتان اشتراک‌گذاری مستقیم فایل را پشتیبانی نمی‌کند — PDF دانلود شد، در واتس‌اپ پیوستش کنید.');
+    toast('مرورگرتان اشتراک‌گذاری مستقیم فایل را پشتیبانی نمی‌کند — عکس دانلود شد، در واتس‌اپ پیوستش کنید.');
   }
 
   function populateInvoiceStoreFilter(){
@@ -1479,9 +1665,10 @@
         <td>${escapeHtml(toJalali(inv.date))}</td>
         <td>${escapeHtml(inv.storeName||'—')}</td>
         <td>${escapeHtml(inv.customerName)}</td>
-        <td class="num">${fmt(inv.total)} تومان</td>
+        <td class="num">${fmt(inv.total)} ریال</td>
         <td style="white-space:nowrap;display:flex;gap:6px;flex-wrap:wrap;">
           <button class="btn ghost sm" data-act="pdf">دانلود PDF</button>
+          <button class="btn ghost sm" data-act="image">دانلود عکس</button>
           <button class="btn ghost sm" data-act="whatsapp">واتس‌اپ</button>
           <button class="btn ghost sm" data-act="edit">ویرایش</button>
           <button class="btn danger sm" data-act="del">حذف</button>
@@ -1490,6 +1677,10 @@
       tr.querySelector('[data-act=pdf]').addEventListener('click', async ()=>{
         await fillPrintArea(inv);
         await exportInvoiceToPdf(inv.number);
+      });
+      tr.querySelector('[data-act=image]').addEventListener('click', async ()=>{
+        await fillPrintArea(inv);
+        await exportInvoiceToImage(inv.number);
       });
       tr.querySelector('[data-act=whatsapp]').addEventListener('click', async ()=>{
         await fillPrintArea(inv);
@@ -1514,6 +1705,18 @@
   $('invoiceStoreFilter').addEventListener('change', renderInvoicesList);
   $('invoiceSortOrder').addEventListener('change', renderInvoicesList);
 
+  let editingCustomerId = null;
+
+  function resetCustomerForm(){
+    editingCustomerId = null;
+    $('custName').value=''; $('custPhone').value=''; $('custCity').value=''; $('custIsPartner').checked = false;
+    populateCategorySelect($('custCategory'), '');
+    $('customerFormTitle').textContent = 'افزودن مشتری';
+    $('addCustomerBtn').textContent = 'افزودن مشتری';
+    $('cancelEditCustomerBtn').style.display = 'none';
+  }
+  $('cancelEditCustomerBtn').addEventListener('click', resetCustomerForm);
+
   $('addCustomerBtn').addEventListener('click', async ()=>{
     const name = $('custName').value.trim();
     const phone = $('custPhone').value.trim();
@@ -1522,10 +1725,29 @@
     const city = $('custCity').value.trim();
     const isPartner = $('custIsPartner').checked;
     if(!name){ toast('نام مشتری را وارد کنید'); return; }
+
+    if(editingCustomerId){
+      const c = customers.find(x=>x.id===editingCustomerId);
+      if(!c){ resetCustomerForm(); return; }
+      const oldName = c.name;
+      c.name = name; c.phone = phone; c.category = category; c.city = city; c.isPartner = isPartner;
+      if(oldName !== name){
+        let changed = false;
+        invoices.forEach(inv=>{ if(inv.customerId === c.id){ inv.customerName = name; changed = true; } });
+        if(changed) await saveKey('invoices', invoices);
+      }
+      await saveKey('customers', customers);
+      resetCustomerForm();
+      refreshCustomerDatalists();
+      renderCustomers();
+      renderInvoicesList();
+      toast('اطلاعات مشتری به‌روزرسانی شد');
+      return;
+    }
+
     customers.push({id:uid(), name, phone, category, city, isPartner});
     await saveKey('customers', customers);
-    $('custName').value=''; $('custPhone').value=''; $('custCity').value=''; $('custIsPartner').checked = false;
-    populateCategorySelect($('custCategory'), '');
+    resetCustomerForm();
     refreshCustomerDatalists();
     renderCustomers();
     toast('مشتری اضافه شد');
@@ -1610,6 +1832,7 @@
           <div class="info"><b>${escapeHtml(c.name)}</b><span>${escapeHtml(sub)}</span></div>
           <div style="display:flex;align-items:center;gap:8px;">
             <button type="button" class="badge type-toggle" data-id="${c.id}" style="cursor:pointer;border:none;font-family:inherit;${c.isPartner ? 'background:var(--accent);color:#1B1200;' : ''}">${c.isPartner ? 'همکار' : 'خریدار خرد'}</button>
+            <button class="btn ghost sm" data-act="edit">ویرایش</button>
             <button class="btn danger sm" data-id="${c.id}">حذف</button>
           </div>
         `;
@@ -1618,9 +1841,22 @@
           await saveKey('customers', customers);
           renderCustomers();
         });
+        card.querySelector('[data-act=edit]').addEventListener('click', ()=>{
+          editingCustomerId = c.id;
+          $('custName').value = c.name;
+          $('custPhone').value = c.phone || '';
+          populateCategorySelect($('custCategory'), c.category || '');
+          $('custCity').value = c.city || '';
+          $('custIsPartner').checked = !!c.isPartner;
+          $('customerFormTitle').textContent = 'ویرایش مشتری';
+          $('addCustomerBtn').textContent = 'به‌روزرسانی مشتری';
+          $('cancelEditCustomerBtn').style.display = 'inline-flex';
+          window.scrollTo(0,0);
+        });
         card.querySelector('.btn.danger').addEventListener('click', async ()=>{
           customers = customers.filter(x=>x.id!==c.id);
           await saveKey('customers', customers);
+          if(editingCustomerId===c.id) resetCustomerForm();
           refreshCustomerDatalists();
           renderCustomers();
           toast('مشتری حذف شد');
@@ -1823,7 +2059,7 @@
         const card = document.createElement('div');
         card.className = 'cust-card';
         card.innerHTML = `
-          <div class="info"><b>${escapeHtml(p.name)}</b><span>${fmt(p.price)} تومان</span></div>
+          <div class="info"><b>${escapeHtml(p.name)}</b><span>${fmt(p.price)} ریال</span></div>
           <div style="display:flex;gap:6px;">
             <button class="btn ghost sm" data-act="edit">ویرایش</button>
             <button class="btn danger sm" data-act="del">حذف</button>
@@ -1863,7 +2099,7 @@
       return filter==='همه' || cat===filter;
     });
     if(!filtered.length){ toast('با این فیلتر محصولی پیدا نشد'); return; }
-    const rows = filtered.map(p=>({ 'نام محصول': p.name, 'دسته‌بندی': p.category||'', 'آخرین قیمت (تومان)': p.price }));
+    const rows = filtered.map(p=>({ 'نام محصول': p.name, 'دسته‌بندی': p.category||'', 'آخرین قیمت (ریال)': p.price }));
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'محصولات');
@@ -1882,7 +2118,7 @@
 
     const invRows = invoices.map(inv=>({
       'شماره فاکتور': inv.number, 'تاریخ': toJalali(inv.date), 'فروشگاه': inv.storeName||'',
-      'مشتری': inv.customerName, 'مبلغ کل': inv.total, 'توضیحات': inv.notes||''
+      'مشتری': inv.customerName, 'مبلغ کل (ریال)': inv.total, 'توضیحات': inv.notes||''
     }));
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(invRows.length?invRows:[{'شماره فاکتور':''}]), 'فاکتورها');
 
@@ -1891,7 +2127,7 @@
       (inv.items||[]).forEach(it=>{
         itemRows.push({
           'شماره فاکتور': inv.number, 'تاریخ': toJalali(inv.date), 'نام کالا': it.name,
-          'توضیحات': it.desc||'', 'تعداد': it.qty, 'قیمت واحد': it.price, 'جمع': it.qty*it.price
+          'توضیحات': it.desc||'', 'تعداد': it.qty, 'قیمت واحد (ریال)': it.price, 'جمع (ریال)': it.qty*it.price
         });
       });
     });
@@ -1988,9 +2224,9 @@
   function renderReport(){
     const list = filteredInvoices();
     const total = list.reduce((s,inv)=>s+inv.total,0);
-    $('kpiTotal').textContent = fmt(total) + ' تومان';
+    $('kpiTotal').textContent = fmt(total) + ' ریال';
     $('kpiCount').textContent = list.length.toLocaleString('fa-IR');
-    $('kpiAvg').textContent = fmt(list.length ? total/list.length : 0) + ' تومان';
+    $('kpiAvg').textContent = fmt(list.length ? total/list.length : 0) + ' ریال';
 
     const period = $('reportPeriod').value;
     const buckets = {};
@@ -2000,7 +2236,7 @@
       buckets[key].count++; buckets[key].total += inv.total;
     });
     const periodRows = Object.entries(buckets).sort((a,b)=> a[0] < b[0] ? 1 : -1);
-    const periodHead = '<div class="rg-head">بازه</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (تومان)</div>';
+    const periodHead = '<div class="rg-head">بازه</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (ریال)</div>';
     $('periodReportEmpty').style.display = periodRows.length ? 'none' : 'block';
     $('periodReportGrid').innerHTML = periodHead + periodRows.map(([key,d])=>
       `<div>${escapeHtml(periodLabel(key,period))}</div><div class="num">${d.count.toLocaleString('fa-IR')}</div><div class="num">${fmt(d.total)}</div>`
@@ -2013,7 +2249,7 @@
       storeBuckets[key].count++; storeBuckets[key].total += inv.total;
     });
     const storeRows = Object.entries(storeBuckets).sort((a,b)=>b[1].total-a[1].total);
-    const storeHead = '<div class="rg-head">فروشگاه</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (تومان)</div>';
+    const storeHead = '<div class="rg-head">فروشگاه</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (ریال)</div>';
     $('storeReportEmpty').style.display = storeRows.length ? 'none' : 'block';
     $('storeReportGrid').innerHTML = storeHead + storeRows.map(([name,d])=>
       `<div>${escapeHtml(name)}</div><div class="num">${d.count.toLocaleString('fa-IR')}</div><div class="num">${fmt(d.total)}</div>`
@@ -2029,7 +2265,7 @@
       cityBuckets[city].count++; cityBuckets[city].total += inv.total;
     });
     const cityRows = Object.entries(cityBuckets).sort((a,b)=>b[1].total-a[1].total);
-    const cityHead = '<div class="rg-head">شهر</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (تومان)</div>';
+    const cityHead = '<div class="rg-head">شهر</div><div class="rg-head num">تعداد فاکتور</div><div class="rg-head num">جمع فروش (ریال)</div>';
     $('cityReportEmpty').style.display = cityRows.length ? 'none' : 'block';
     $('cityReportGrid').innerHTML = cityHead + cityRows.map(([city,d])=>
       `<div>${escapeHtml(city)}</div><div class="num">${d.count.toLocaleString('fa-IR')}</div><div class="num">${fmt(d.total)}</div>`
@@ -2044,7 +2280,7 @@
       });
     });
     const rows = Object.entries(perProduct).sort((a,b)=>b[1].revenue-a[1].revenue);
-    const productHead = '<div class="rg-head">نام محصول</div><div class="rg-head num">تعداد فروش رفته</div><div class="rg-head num">جمع فروش (تومان)</div>';
+    const productHead = '<div class="rg-head">نام محصول</div><div class="rg-head num">تعداد فروش رفته</div><div class="rg-head num">جمع فروش (ریال)</div>';
     $('reportEmpty').style.display = rows.length ? 'none' : 'block';
     $('productReportGrid').innerHTML = productHead + rows.map(([name, d])=>
       `<div>${escapeHtml(name)}</div><div class="num">${d.qty.toLocaleString('fa-IR')}</div><div class="num">${fmt(d.revenue)}</div>`
@@ -2088,7 +2324,7 @@
     ]);
     XLSX.utils.book_append_sheet(wb, summarySheet, 'خلاصه');
     const productSheet = XLSX.utils.json_to_sheet(rows.map(([name,d])=>({
-      'نام محصول': name, 'تعداد فروش رفته': d.qty, 'جمع فروش (تومان)': d.revenue
+      'نام محصول': name, 'تعداد فروش رفته': d.qty, 'جمع فروش (ریال)': d.revenue
     })));
     XLSX.utils.book_append_sheet(wb, productSheet, 'فروش به تفکیک محصول');
     XLSX.writeFile(wb, 'گزارش-فروش-کارانیک.xlsx');
