@@ -345,6 +345,9 @@
     <div class="field"><label>تکرار رمز عبور جدید</label><input type="password" id="newPassword2"></div>
     <div class="authError" id="newPasswordError"></div>
     <button class="btn accent" id="saveNewPasswordBtn" style="width:100%;">ذخیره رمز جدید</button>
+    <div style="text-align:center;margin-top:14px;">
+      <button type="button" id="cancelNewPasswordBtn" style="background:none;border:none;color:var(--muted);font-size:12.5px;cursor:pointer;text-decoration:underline;">انصراف و بازگشت به صفحه ورود</button>
+    </div>
   </div>
 </div>
 
@@ -653,6 +656,29 @@
             <p class="pagesub" style="margin:4px 0 0;">یک فایل اکسل شامل همه‌ی مشتری‌ها، فاکتورها، محصولات، دسته‌بندی‌ها و فروشگاه‌ها دانلود کنید.</p>
           </div>
           <button class="btn ghost" id="backupBtn">دانلود پشتیبان کامل</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="rowbetween">
+          <div>
+            <h2>بازیابی اطلاعات قدیمی</h2>
+            <p class="pagesub" style="margin:4px 0 0;">هر فاکتور، مشتری یا محصولی که در نسخه‌ی قبلی ذخیره شده ولی الان در لیست نیست را پیدا و اضافه می‌کند (چیزی حذف یا جایگزین نمی‌شود).</p>
+          </div>
+          <button class="btn ghost" id="recoverLegacyBtn">بررسی و بازیابی</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="rowbetween">
+          <div>
+            <h2>بازیابی از فایل پشتیبان اکسل</h2>
+            <p class="pagesub" style="margin:4px 0 0;">همون فایلی که قبلاً با دکمه «دانلود پشتیبان کامل» گرفتید رو اینجا بارگذاری کنید تا مشتری‌ها، محصولات، فروشگاه‌ها، دسته‌بندی‌ها و فاکتورهای داخلش دوباره اضافه بشن (موارد تکراری رد می‌شن).</p>
+          </div>
+          <div>
+            <input type="file" id="restoreBackupInput" accept=".xlsx,.xls" style="display:none;">
+            <button class="btn ghost" id="restoreBackupBtn">بارگذاری فایل پشتیبان</button>
+          </div>
         </div>
       </div>
 
@@ -975,6 +1001,7 @@
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   let currentUser = null;
 
+  // legacy blob storage — kept only so we can migrate old data once into the new per-row tables below
   async function loadKey(key, fallback){
     try{
       const { data, error } = await sb.from('app_data').select('value').eq('user_id', currentUser.id).eq('key', key).maybeSingle();
@@ -982,45 +1009,161 @@
       return (data && data.value != null) ? data.value : fallback;
     }catch(e){ return fallback; }
   }
-  async function saveKey(key, value){
+
+  // ---------- per-row CRUD against dedicated tables (safe for many people using the app at once) ----------
+  function rowToCustomer(r){ return { id:r.id, name:r.name, phone:r.phone||'', category:r.category||'', city:r.city||'', isPartner:!!r.is_partner }; }
+  function rowToProduct(r){ return { id:r.id, name:r.name, category:r.category||'', price:Number(r.price)||0 }; }
+  function rowToStore(r){ return { id:r.id, name:r.name, phone:r.phone||'', sub:r.sub||'', logo:r.logo||'', theme:r.theme||'classic' }; }
+  function rowToInvoice(r){ return { id:r.id, number:r.number, date:r.date, customerId:r.customer_id, customerName:r.customer_name, storeId:r.store_id, storeName:r.store_name, storePhone:r.store_phone||'', storeSub:r.store_sub||'', storeLogo:r.store_logo||'', storeTheme:r.store_theme||'classic', notes:r.notes||'', total:Number(r.total)||0, items:r.items||[] }; }
+
+  function isMissingTableError(e){
+    const msg = ((e && (e.message || (e.error && e.error.message))) || '') + '';
+    const code = e && e.code;
+    return code === '42P01' || /does not exist|schema cache|relation .* does not exist/i.test(msg);
+  }
+  function dbErrorMessage(e, fallback){
+    if(isMissingTableError(e)){
+      window._dbSetupMissing = true;
+      showSetupWarningBanner();
+      return 'جدول‌های پایگاه‌داده هنوز در Supabase ساخته نشده‌اند — پیام راهنما بالای صفحه را ببینید.';
+    }
+    return fallback;
+  }
+
+  async function dbList(table, mapper){
     try{
-      const { error } = await sb.from('app_data').upsert({ user_id: currentUser.id, key, value, updated_at: new Date().toISOString() });
+      const { data, error } = await sb.from(table).select('*').eq('user_id', currentUser.id).order('created_at', {ascending:true});
+      if(error) throw error;
+      return (data||[]).map(mapper);
+    }catch(e){ if(isMissingTableError(e)){ window._dbSetupMissing = true; showSetupWarningBanner(); } return []; }
+  }
+  async function dbInsert(table, row){
+    try{
+      const { error } = await sb.from(table).insert(row);
       if(error) throw error;
       return true;
+    }catch(e){ toast(dbErrorMessage(e, 'خطا در ذخیره‌سازی اطلاعات (اتصال اینترنت را بررسی کنید)')); return false; }
+  }
+  async function dbUpdate(table, id, patch){
+    try{
+      const { error } = await sb.from(table).update(patch).eq('id', id).eq('user_id', currentUser.id);
+      if(error) throw error;
+      return true;
+    }catch(e){ toast(dbErrorMessage(e, 'خطا در به‌روزرسانی اطلاعات (اتصال اینترنت را بررسی کنید)')); return false; }
+  }
+  async function dbDelete(table, id){
+    try{
+      const { error } = await sb.from(table).delete().eq('id', id).eq('user_id', currentUser.id);
+      if(error) throw error;
+      return true;
+    }catch(e){ toast(dbErrorMessage(e, 'خطا در حذف اطلاعات (اتصال اینترنت را بررسی کنید)')); return false; }
+  }
+
+  async function dbListCategories(){
+    try{
+      const { data, error } = await sb.from('categories').select('name').eq('user_id', currentUser.id).order('name');
+      if(error) throw error;
+      return (data||[]).map(r=>r.name);
+    }catch(e){ if(isMissingTableError(e)){ window._dbSetupMissing = true; showSetupWarningBanner(); } return []; }
+  }
+  async function dbInsertCategory(name){
+    try{
+      const { error } = await sb.from('categories').insert({ user_id: currentUser.id, name });
+      if(error) throw error;
+      return true;
+    }catch(e){ toast(dbErrorMessage(e, 'خطا در ذخیره‌سازی دسته‌بندی')); return false; }
+  }
+  async function dbRenameCategory(oldName, newName){
+    try{
+      const { error } = await sb.from('categories').update({name:newName}).eq('user_id', currentUser.id).eq('name', oldName);
+      if(error) throw error;
+      return true;
+    }catch(e){ toast(dbErrorMessage(e, 'خطا در ذخیره‌سازی اطلاعات')); return false; }
+  }
+  async function dbDeleteCategory(name){
+    try{
+      const { error } = await sb.from('categories').delete().eq('user_id', currentUser.id).eq('name', name);
+      if(error) throw error;
+      return true;
+    }catch(e){ return false; }
+  }
+
+  function showSetupWarningBanner(){
+    if($('setupWarningBanner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'setupWarningBanner';
+    banner.style.cssText = 'position:sticky;top:0;z-index:2000;background:#B23B3B;color:#fff;padding:14px 20px;font-size:13.5px;line-height:1.8;text-align:center;';
+    banner.innerHTML = 'جدول‌های پایگاه‌داده در Supabase هنوز ساخته نشده‌اند، برای همین چیزی ذخیره نمی‌شود. لطفاً یک‌بار به Supabase → SQL Editor بروید و اسکریپت راه‌اندازی جدول‌ها را اجرا کنید، سپس صفحه را رفرش کنید.';
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+
+  // atomically reserves the next invoice number even if several people save an invoice at the same instant
+  async function nextInvoiceNumberSafe(){
+    try{
+      const { data, error } = await sb.rpc('next_invoice_number');
+      if(error) throw error;
+      return data;
     }catch(e){
-      toast('خطا در ذخیره‌سازی اطلاعات (اتصال اینترنت را بررسی کنید)');
-      return false;
+      // fallback if the SQL function hasn't been set up yet — not perfectly race-proof, but keeps the app usable
+      return 'INV-' + String(invoices.length+1).padStart(4,'0');
     }
   }
 
   async function loadAll(){
-    customers = await loadKey('customers', []);
-    invoices  = await loadKey('invoices', []);
-    categories = await loadKey('categories', []);
-    stores = await loadKey('stores', []);
-    let changed = false;
-    customers.forEach(c=>{ if(c.category && !categories.includes(c.category)){ categories.push(c.category); changed = true; } });
-    if(changed) await saveKey('categories', categories);
-    if(stores.length===0){
-      const legacy = await loadKey('settings', null);
-      if(legacy){
-        stores.push({id:uid(), name: legacy.coName||'فروشگاه من', phone: legacy.coPhone||'', sub: legacy.coSub||'', logo: legacy.logo||''});
-      } else {
-        stores.push({id:uid(), name:'فروشگاه من', phone:'', sub:'', logo:''});
-      }
-      await saveKey('stores', stores);
+    customers = await dbList('customers', rowToCustomer);
+    products = await dbList('products', rowToProduct);
+    stores = await dbList('stores', rowToStore);
+    invoices = await dbList('invoices', rowToInvoice);
+    categories = await dbListCategories();
+
+    const nothingYet = !customers.length && !products.length && !stores.length && !invoices.length && !categories.length;
+    if(nothingYet) await migrateLegacyBlobData();
+
+    if(!stores.length){
+      const legacySettings = await loadKey('settings', null);
+      const store = { id:uid(), name: (legacySettings && legacySettings.coName) || 'فروشگاه من', phone: (legacySettings && legacySettings.coPhone) || '', sub: (legacySettings && legacySettings.coSub) || '', logo: (legacySettings && legacySettings.logo) || '', theme:'classic' };
+      await dbInsert('stores', { id:store.id, user_id:currentUser.id, name:store.name, phone:store.phone, sub:store.sub, logo:store.logo, theme:store.theme });
+      stores = [store];
     }
-    products = await loadKey('products', []);
-    if(products.length===0 && invoices.length){
-      invoices.forEach(inv=> (inv.items||[]).forEach(it=>{
-        if(!products.find(p=>p.name===it.name)) products.push({id:uid(), name: it.name, category:'', price: it.price});
-      }));
-      if(products.length) await saveKey('products', products);
+  }
+
+  // one-time move of any data that still lives in the old single-blob-per-list storage into the new per-row tables
+  async function migrateLegacyBlobData(){
+    const legacyCustomers = await loadKey('customers', []);
+    const legacyProducts = await loadKey('products', []);
+    const legacyStores = await loadKey('stores', []);
+    const legacyInvoices = await loadKey('invoices', []);
+    const legacyCategories = await loadKey('categories', []);
+    if(!legacyCustomers.length && !legacyProducts.length && !legacyStores.length && !legacyInvoices.length && !legacyCategories.length) return;
+
+    toast('در حال انتقال اطلاعات قدیمی...');
+    for(const c of legacyCustomers){
+      await dbInsert('customers', { id:c.id||uid(), user_id:currentUser.id, name:c.name, phone:c.phone||'', category:c.category||'', city:c.city||'', is_partner:!!c.isPartner });
     }
-    // backfill ids for any products saved before ids were introduced
-    let productsChanged = false;
-    products.forEach(p=>{ if(!p.id){ p.id = uid(); productsChanged = true; } });
-    if(productsChanged) await saveKey('products', products);
+    for(const p of legacyProducts){
+      await dbInsert('products', { id:p.id||uid(), user_id:currentUser.id, name:p.name, category:p.category||'', price:p.price||0 });
+    }
+    for(const s of legacyStores){
+      await dbInsert('stores', { id:s.id||uid(), user_id:currentUser.id, name:s.name, phone:s.phone||'', sub:s.sub||'', logo:s.logo||'', theme:s.theme||'classic' });
+    }
+    for(const inv of legacyInvoices){
+      await dbInsert('invoices', {
+        id:inv.id||uid(), user_id:currentUser.id, number:inv.number, date:inv.date,
+        customer_id:inv.customerId, customer_name:inv.customerName,
+        store_id:inv.storeId, store_name:inv.storeName, store_phone:inv.storePhone||'', store_sub:inv.storeSub||'', store_logo:inv.storeLogo||'', store_theme:inv.storeTheme||'classic',
+        notes:inv.notes||'', total:inv.total||0, items:inv.items||[]
+      });
+    }
+    const catSet = new Set(legacyCategories);
+    legacyCustomers.forEach(c=>{ if(c.category) catSet.add(c.category); });
+    for(const name of catSet){ await dbInsertCategory(name); }
+
+    customers = await dbList('customers', rowToCustomer);
+    products = await dbList('products', rowToProduct);
+    stores = await dbList('stores', rowToStore);
+    invoices = await dbList('invoices', rowToInvoice);
+    categories = await dbListCategories();
+    toast('انتقال اطلاعات قدیمی کامل شد');
   }
 
   document.querySelectorAll('.navbtn[data-view]').forEach(btn=>{
@@ -1053,11 +1196,13 @@
     if(sel.value !== '__new__') return;
     const name = (window.prompt('نام دسته‌بندی جدید را وارد کنید:')||'').trim();
     if(name && !categories.includes(name)){
-      categories.push(name);
-      await saveKey('categories', categories);
-      populateAllCategorySelects();
-      renderCategoryChips();
-      renderFilterCategoryOptions();
+      const ok = await dbInsertCategory(name);
+      if(ok){
+        categories.push(name);
+        populateAllCategorySelects();
+        renderCategoryChips();
+        renderFilterCategoryOptions();
+      }
     }
     sel.value = name && categories.includes(name) ? name : '';
   }
@@ -1069,8 +1214,9 @@
     const name = $('newCategoryInput').value.trim();
     if(!name){ toast('نام دسته‌بندی را وارد کنید'); return; }
     if(categories.includes(name)){ toast('این دسته‌بندی قبلاً ثبت شده'); return; }
+    const ok = await dbInsertCategory(name);
+    if(!ok) return;
     categories.push(name);
-    await saveKey('categories', categories);
     $('newCategoryInput').value = '';
     renderCategoryChips();
     populateAllCategorySelects();
@@ -1090,11 +1236,11 @@
         const newName = (window.prompt('نام جدید دسته‌بندی:', cat) || '').trim();
         if(!newName || newName === cat) return;
         if(categories.includes(newName)){ toast('این نام قبلاً استفاده شده'); return; }
-        const idx = categories.indexOf(cat);
-        categories[idx] = newName;
-        customers.forEach(c=>{ if(c.category === cat) c.category = newName; });
-        await saveKey('categories', categories);
-        await saveKey('customers', customers);
+        const ok = await dbRenameCategory(cat, newName);
+        if(!ok) return;
+        try{ await sb.from('customers').update({category:newName}).eq('user_id', currentUser.id).eq('category', cat); }catch(e){}
+        categories = categories.map(c=>c===cat ? newName : c);
+        customers = await dbList('customers', rowToCustomer);
         renderCategoryChips();
         populateAllCategorySelects();
         renderFilterCategoryOptions();
@@ -1102,8 +1248,9 @@
         toast('نام دسته‌بندی به‌روزرسانی شد');
       });
       chip.querySelector('[data-act=del]').addEventListener('click', async ()=>{
+        const ok = await dbDeleteCategory(cat);
+        if(!ok) return;
         categories = categories.filter(c=>c!==cat);
-        await saveKey('categories', categories);
         renderCategoryChips();
         populateAllCategorySelects();
         renderFilterCategoryOptions();
@@ -1204,15 +1351,26 @@
     $('productNameList').innerHTML = products.map(p=>`<option value="${escapeHtml(p.name)}">`).join('');
   }
   async function upsertProducts(items){
+    const relevant = items.filter(it=>it.name);
+    if(!relevant.length) return;
     let changed = false;
-    items.forEach(it=>{
-      if(!it.name) return;
-      const existing = products.find(p=>p.name===it.name);
-      if(existing){ if(existing.price !== it.price){ existing.price = it.price; changed = true; } }
-      else { products.push({id:uid(), name: it.name, category:'', price: it.price}); changed = true; }
-    });
+    const fresh = await dbList('products', rowToProduct);
+    for(const it of relevant){
+      const existing = fresh.find(p=>p.name===it.name);
+      if(existing){
+        if(existing.price !== it.price){
+          await dbUpdate('products', existing.id, {price: it.price});
+          existing.price = it.price;
+          changed = true;
+        }
+      } else {
+        const rec = {id:uid(), name: it.name, category:'', price: it.price};
+        const ok = await dbInsert('products', {id:rec.id, user_id:currentUser.id, name:rec.name, category:rec.category, price:rec.price});
+        if(ok){ fresh.push(rec); changed = true; }
+      }
+    }
+    products = fresh;
     if(changed){
-      await saveKey('products', products);
       refreshProductDatalist();
       if($('view-products').classList.contains('active')) renderProductsList();
     }
@@ -1412,13 +1570,12 @@
       if(!name){ toast('نام مشتری را وارد کنید'); return null; }
       const catVal = $('newCustCategory').value;
       const newCust = {id:uid(), name, phone:$('newCustPhone').value.trim(), category: catVal==='__new__' ? '' : catVal, city: $('newCustCity').value.trim(), isPartner: $('newCustIsPartner').checked};
-      customers.push(newCust);
-      const custSaveOk = await saveKey('customers', customers);
-      if(!custSaveOk){
-        customers.pop();
+      const ok = await dbInsert('customers', { id:newCust.id, user_id:currentUser.id, name:newCust.name, phone:newCust.phone, category:newCust.category, city:newCust.city, is_partner:newCust.isPartner });
+      if(!ok){
         toast('ذخیره مشتری جدید ناموفق بود — اتصال اینترنت را بررسی و دوباره تلاش کنید');
         return null;
       }
+      customers.push(newCust);
       customerId = newCust.id; customerName = newCust.name;
       refreshCustomerDatalists();
     } else {
@@ -1427,21 +1584,33 @@
     }
 
     const total = items.reduce((s,it)=>s+it.qty*it.price,0);
+    const wasEditingId = editingInvoiceId;
     const invoiceData = {
-      number: $('invNumber').value, date: $('invDate').value,
+      id: wasEditingId || uid(),
+      number: wasEditingId ? $('invNumber').value : await nextInvoiceNumberSafe(),
+      date: $('invDate').value,
       customerId, customerName, items, notes: $('invNotes').value.trim(), total,
       storeId: store.id, storeName: store.name, storePhone: store.phone, storeSub: store.sub, storeLogo: store.logo, storeTheme: store.theme||'classic'
     };
-
-    if(editingInvoiceId){
-      const idx = invoices.findIndex(i=>i.id===editingInvoiceId);
-      invoiceData.id = editingInvoiceId;
-      if(idx>-1) invoices[idx] = invoiceData; else invoices.push(invoiceData);
+    const invRow = {
+      id:invoiceData.id, user_id:currentUser.id, number:invoiceData.number, date:invoiceData.date,
+      customer_id:invoiceData.customerId, customer_name:invoiceData.customerName,
+      store_id:invoiceData.storeId, store_name:invoiceData.storeName, store_phone:invoiceData.storePhone,
+      store_sub:invoiceData.storeSub, store_logo:invoiceData.storeLogo, store_theme:invoiceData.storeTheme,
+      notes:invoiceData.notes, total:invoiceData.total, items:invoiceData.items
+    };
+    let ok;
+    if(wasEditingId){
+      ok = await dbUpdate('invoices', wasEditingId, invRow);
+      if(ok){ const idx = invoices.findIndex(i=>i.id===wasEditingId); if(idx>-1) invoices[idx]=invoiceData; else invoices.push(invoiceData); }
     } else {
-      invoiceData.id = uid();
-      invoices.push(invoiceData);
+      ok = await dbInsert('invoices', invRow);
+      if(ok) invoices.push(invoiceData);
     }
-    await saveKey('invoices', invoices);
+    if(!ok){
+      toast('ذخیره فاکتور ناموفق بود — اتصال اینترنت را بررسی و دوباره تلاش کنید');
+      return null;
+    }
     await upsertProducts(items);
     return invoiceData;
   }
@@ -1692,8 +1861,9 @@
       });
       tr.querySelector('[data-act=del]').addEventListener('click', async ()=>{
         if(!window.confirm('این فاکتور برای همیشه حذف می‌شود. مطمئن هستید؟')) return;
+        const ok = await dbDelete('invoices', inv.id);
+        if(!ok) return;
         invoices = invoices.filter(i=>i.id!==inv.id);
-        await saveKey('invoices', invoices);
         renderInvoicesList();
         renderReport();
         toast('فاکتور حذف شد');
@@ -1727,16 +1897,17 @@
     if(!name){ toast('نام مشتری را وارد کنید'); return; }
 
     if(editingCustomerId){
-      const c = customers.find(x=>x.id===editingCustomerId);
+      const editingId = editingCustomerId;
+      const c = customers.find(x=>x.id===editingId);
       if(!c){ resetCustomerForm(); return; }
       const oldName = c.name;
+      const ok = await dbUpdate('customers', editingId, { name, phone, category, city, is_partner:isPartner });
+      if(!ok) return;
       c.name = name; c.phone = phone; c.category = category; c.city = city; c.isPartner = isPartner;
       if(oldName !== name){
-        let changed = false;
-        invoices.forEach(inv=>{ if(inv.customerId === c.id){ inv.customerName = name; changed = true; } });
-        if(changed) await saveKey('invoices', invoices);
+        try{ await sb.from('invoices').update({customer_name:name}).eq('user_id', currentUser.id).eq('customer_id', editingId); }catch(e){}
+        invoices.forEach(inv=>{ if(inv.customerId === editingId) inv.customerName = name; });
       }
-      await saveKey('customers', customers);
       resetCustomerForm();
       refreshCustomerDatalists();
       renderCustomers();
@@ -1745,8 +1916,10 @@
       return;
     }
 
-    customers.push({id:uid(), name, phone, category, city, isPartner});
-    await saveKey('customers', customers);
+    const newCust = {id:uid(), name, phone, category, city, isPartner};
+    const ok = await dbInsert('customers', { id:newCust.id, user_id:currentUser.id, name, phone, category, city, is_partner:isPartner });
+    if(!ok) return;
+    customers.push(newCust);
     resetCustomerForm();
     refreshCustomerDatalists();
     renderCustomers();
@@ -1763,6 +1936,8 @@
       const sheet = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
       let added = 0;
+      const newCategories = [];
+      const newCustomers = [];
       rows.forEach(r=>{
         const name = String(r['نام مشتری']||r['نام']||r['Name']||'').trim();
         if(!name) return;
@@ -1771,14 +1946,19 @@
         const city = String(r['شهر']||r['City']||'').trim();
         const typeRaw = String(r['نوع مشتری']||r['نوع']||r['Type']||'').trim();
         const isPartner = /همکار|partner/i.test(typeRaw);
-        const dup = customers.some(c=>c.name===name && (c.phone||'')===phone);
+        const dup = customers.some(c=>c.name===name && (c.phone||'')===phone) || newCustomers.some(c=>c.name===name && (c.phone||'')===phone);
         if(dup) return;
-        customers.push({id:uid(), name, phone, category, city, isPartner});
-        if(category && !categories.includes(category)) categories.push(category);
+        newCustomers.push({id:uid(), name, phone, category, city, isPartner});
+        if(category) newCategories.push(category);
         added++;
       });
-      await saveKey('customers', customers);
-      await saveKey('categories', categories);
+      for(const nc of newCustomers){
+        await dbInsert('customers', { id:nc.id, user_id:currentUser.id, name:nc.name, phone:nc.phone, category:nc.category, city:nc.city, is_partner:nc.isPartner });
+      }
+      customers = customers.concat(newCustomers);
+      const uniqueNewCats = Array.from(new Set(newCategories)).filter(c=>!categories.includes(c));
+      for(const c of uniqueNewCats){ await dbInsertCategory(c); }
+      categories = categories.concat(uniqueNewCats);
       populateAllCategorySelects();
       renderCategoryChips();
       refreshCustomerDatalists();
@@ -1837,8 +2017,10 @@
           </div>
         `;
         card.querySelector('.type-toggle').addEventListener('click', async ()=>{
-          c.isPartner = !c.isPartner;
-          await saveKey('customers', customers);
+          const cid = c.id; const newVal = !c.isPartner;
+          const ok = await dbUpdate('customers', cid, {is_partner:newVal});
+          if(!ok) return;
+          c.isPartner = newVal;
           renderCustomers();
         });
         card.querySelector('[data-act=edit]').addEventListener('click', ()=>{
@@ -1854,9 +2036,11 @@
           window.scrollTo(0,0);
         });
         card.querySelector('.btn.danger').addEventListener('click', async ()=>{
-          customers = customers.filter(x=>x.id!==c.id);
-          await saveKey('customers', customers);
-          if(editingCustomerId===c.id) resetCustomerForm();
+          const cid = c.id;
+          const ok = await dbDelete('customers', cid);
+          if(!ok) return;
+          customers = customers.filter(x=>x.id!==cid);
+          if(editingCustomerId===cid) resetCustomerForm();
           refreshCustomerDatalists();
           renderCustomers();
           toast('مشتری حذف شد');
@@ -1928,9 +2112,16 @@
       logo: pendingStoreLogo || existingLogo,
       theme: $('storeTheme').value || 'classic'
     };
-    if(editingStoreId){ stores = stores.map(s=>s.id===editingStoreId ? rec : s); }
-    else { stores.push(rec); }
-    await saveKey('stores', stores);
+    const editingId = editingStoreId;
+    let ok;
+    if(editingId){
+      ok = await dbUpdate('stores', editingId, { name:rec.name, phone:rec.phone, sub:rec.sub, logo:rec.logo, theme:rec.theme });
+      if(ok) stores = stores.map(s=>s.id===editingId ? rec : s);
+    } else {
+      ok = await dbInsert('stores', { id:rec.id, user_id:currentUser.id, name:rec.name, phone:rec.phone, sub:rec.sub, logo:rec.logo, theme:rec.theme });
+      if(ok) stores.push(rec);
+    }
+    if(!ok) return;
     resetStoreForm();
     renderStoresList();
     populateStoreSelect();
@@ -1968,8 +2159,10 @@
       });
       card.querySelector('[data-act=del]').addEventListener('click', async ()=>{
         if(stores.length<=1){ toast('حداقل یک فروشگاه باید باقی بماند'); return; }
-        stores = stores.filter(x=>x.id!==s.id);
-        await saveKey('stores', stores);
+        const sid = s.id;
+        const ok = await dbDelete('stores', sid);
+        if(!ok) return;
+        stores = stores.filter(x=>x.id!==sid);
         renderStoresList();
         populateStoreSelect();
         toast('فروشگاه حذف شد');
@@ -2000,23 +2193,30 @@
     const price = parseFloat($('productPriceInput').value) || 0;
 
     if(editingProductId){
-      const p = products.find(x=>x.id===editingProductId);
-      if(!p){ resetProductForm(); return; }
       if(products.some(x=>x.id!==editingProductId && x.name===name)){ toast('محصولی با این نام قبلاً ثبت شده'); return; }
+      const editingId = editingProductId;
+      const p = products.find(x=>x.id===editingId);
+      if(!p){ resetProductForm(); return; }
       const oldName = p.name;
+      const ok = await dbUpdate('products', editingId, {name, category, price});
+      if(!ok) return;
       p.name = name; p.category = category; p.price = price;
-      if(oldName !== name){
-        let changed = false;
-        invoices.forEach(inv=>{
-          (inv.items||[]).forEach(it=>{ if(it.name === oldName){ it.name = name; changed = true; } });
-        });
-        if(changed) await saveKey('invoices', invoices);
+      if(oldName && oldName !== name){
+        const freshInvoices = await dbList('invoices', rowToInvoice);
+        for(const inv of freshInvoices){
+          let touched = false;
+          inv.items.forEach(it=>{ if(it.name===oldName){ it.name = name; touched = true; } });
+          if(touched) await dbUpdate('invoices', inv.id, { items: inv.items });
+        }
+        invoices = freshInvoices;
       }
     } else {
       if(products.some(x=>x.name===name)){ toast('محصولی با این نام قبلاً ثبت شده'); return; }
-      products.push({id:uid(), name, category, price});
+      const rec = {id:uid(), name, category, price};
+      const ok = await dbInsert('products', { id:rec.id, user_id:currentUser.id, name, category, price });
+      if(!ok) return;
+      products.push(rec);
     }
-    await saveKey('products', products);
     resetProductForm();
     renderProductsList();
     refreshProductDatalist();
@@ -2077,9 +2277,11 @@
         });
         card.querySelector('[data-act=del]').addEventListener('click', async ()=>{
           if(!window.confirm('این محصول از لیست پیشنهادها حذف می‌شود (فاکتورهای قبلی که قبلاً ثبت شده‌اند دست‌نخورده می‌مانند). ادامه می‌دهید؟')) return;
-          products = products.filter(x=>x.id!==p.id);
-          await saveKey('products', products);
-          if(editingProductId===p.id) resetProductForm();
+          const pid = p.id;
+          const ok = await dbDelete('products', pid);
+          if(!ok) return;
+          products = products.filter(x=>x.id!==pid);
+          if(editingProductId===pid) resetProductForm();
           renderProductsList();
           refreshProductDatalist();
           toast('محصول حذف شد');
@@ -2142,6 +2344,198 @@
     const todayISO = new Date().toISOString().slice(0,10);
     XLSX.writeFile(wb, `پشتیبان-کارانیک-${todayISO}.xlsx`);
     toast('فایل پشتیبان دانلود شد');
+  });
+
+  $('recoverLegacyBtn').addEventListener('click', async ()=>{
+    $('recoverLegacyBtn').textContent = 'در حال بررسی...';
+    try{
+      const legacyCustomers = await loadKey('customers', []);
+      const legacyProducts = await loadKey('products', []);
+      const legacyStores = await loadKey('stores', []);
+      const legacyInvoices = await loadKey('invoices', []);
+      const legacyCategories = await loadKey('categories', []);
+
+      let recovered = {customers:0, products:0, stores:0, invoices:0, categories:0};
+
+      for(const c of legacyCustomers){
+        if(c && c.id && !customers.some(x=>x.id===c.id)){
+          const ok = await dbInsert('customers', { id:c.id, user_id:currentUser.id, name:c.name, phone:c.phone||'', category:c.category||'', city:c.city||'', is_partner:!!c.isPartner });
+          if(ok){ customers.push({id:c.id, name:c.name, phone:c.phone||'', category:c.category||'', city:c.city||'', isPartner:!!c.isPartner}); recovered.customers++; }
+        }
+      }
+      for(const p of legacyProducts){
+        if(p && p.id && !products.some(x=>x.id===p.id)){
+          const ok = await dbInsert('products', { id:p.id, user_id:currentUser.id, name:p.name, category:p.category||'', price:p.price||0 });
+          if(ok){ products.push({id:p.id, name:p.name, category:p.category||'', price:p.price||0}); recovered.products++; }
+        }
+      }
+      for(const s of legacyStores){
+        if(s && s.id && !stores.some(x=>x.id===s.id)){
+          const ok = await dbInsert('stores', { id:s.id, user_id:currentUser.id, name:s.name, phone:s.phone||'', sub:s.sub||'', logo:s.logo||'', theme:s.theme||'classic' });
+          if(ok){ stores.push({id:s.id, name:s.name, phone:s.phone||'', sub:s.sub||'', logo:s.logo||'', theme:s.theme||'classic'}); recovered.stores++; }
+        }
+      }
+      for(const inv of legacyInvoices){
+        if(inv && inv.id && !invoices.some(x=>x.id===inv.id)){
+          const ok = await dbInsert('invoices', {
+            id:inv.id, user_id:currentUser.id, number:inv.number, date:inv.date,
+            customer_id:inv.customerId, customer_name:inv.customerName,
+            store_id:inv.storeId, store_name:inv.storeName, store_phone:inv.storePhone||'', store_sub:inv.storeSub||'', store_logo:inv.storeLogo||'', store_theme:inv.storeTheme||'classic',
+            notes:inv.notes||'', total:inv.total||0, items:inv.items||[]
+          });
+          if(ok){ invoices.push(inv); recovered.invoices++; }
+        }
+      }
+      const missingCats = legacyCategories.filter(name=>!categories.includes(name));
+      for(const name of missingCats){
+        const ok = await dbInsertCategory(name);
+        if(ok){ categories.push(name); recovered.categories++; }
+      }
+
+      const total = recovered.customers + recovered.products + recovered.stores + recovered.invoices + recovered.categories;
+      if(total === 0){
+        toast('چیزی برای بازیابی پیدا نشد — همه‌چیز از قبل در لیست فعلی موجود است');
+      } else {
+        toast(`بازیابی شد: ${recovered.invoices} فاکتور، ${recovered.customers} مشتری، ${recovered.products} محصول، ${recovered.stores} فروشگاه، ${recovered.categories} دسته‌بندی`);
+        renderCustomers(); renderProductsList(); renderStoresList(); renderInvoicesList(); renderReport();
+        populateAllCategorySelects(); renderCategoryChips(); populateStoreSelect(); refreshCustomerDatalists(); refreshProductDatalist();
+      }
+    }catch(e){
+      toast('خطا در بررسی اطلاعات قدیمی');
+    }
+    $('recoverLegacyBtn').textContent = 'بررسی و بازیابی';
+  });
+
+  function parseJalaliBackupDate(str){
+    if(!str) return new Date().toISOString().slice(0,10);
+    const clean = toLatinDigits(String(str).trim()).replace(/[^\d]+/g,'-').replace(/^-|-$/g,'');
+    const parts = clean.split('-').filter(Boolean).map(Number);
+    if(parts.length<3 || parts.some(n=>isNaN(n))) return new Date().toISOString().slice(0,10);
+    try{
+      const g = toGregorian(parts[0], parts[1], parts[2]);
+      return `${g.gy}-${String(g.gm).padStart(2,'0')}-${String(g.gd).padStart(2,'0')}`;
+    }catch(e){ return new Date().toISOString().slice(0,10); }
+  }
+
+  $('restoreBackupBtn').addEventListener('click', ()=>$('restoreBackupInput').click());
+  $('restoreBackupInput').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    $('restoreBackupBtn').textContent = 'در حال بازیابی...';
+    try{
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, {type:'array'});
+      const sheet = (name)=> wb.Sheets[name] ? XLSX.utils.sheet_to_json(wb.Sheets[name], {defval:''}) : [];
+
+      const catRows = sheet('دسته‌بندی‌ها');
+      const custRows = sheet('مشتریان');
+      const prodRows = sheet('محصولات');
+      const storeRows = sheet('فروشگاه‌ها');
+      const invRows = sheet('فاکتورها');
+      const itemRows = sheet('اقلام فاکتورها');
+
+      let counts = {categories:0, stores:0, customers:0, products:0, invoices:0};
+
+      for(const r of catRows){
+        const name = String(r['نام دسته‌بندی']||'').trim();
+        if(name && !categories.includes(name)){
+          const ok = await dbInsertCategory(name);
+          if(ok){ categories.push(name); counts.categories++; }
+        }
+      }
+
+      for(const r of storeRows){
+        const name = String(r['نام فروشگاه']||'').trim();
+        if(!name || stores.some(s=>s.name===name)) continue;
+        const rec = {id:uid(), name, phone:String(r['شماره تماس']||'').trim(), sub:String(r['توضیح']||'').trim(), logo:'', theme:'classic'};
+        const ok = await dbInsert('stores', {id:rec.id, user_id:currentUser.id, name:rec.name, phone:rec.phone, sub:rec.sub, logo:rec.logo, theme:rec.theme});
+        if(ok){ stores.push(rec); counts.stores++; }
+      }
+
+      for(const r of custRows){
+        const name = String(r['نام مشتری']||'').trim();
+        if(!name) continue;
+        const phone = String(r['شماره تماس']||'').trim();
+        if(customers.some(c=>c.name===name && (c.phone||'')===phone)) continue;
+        const category = String(r['دسته‌بندی']||'').trim();
+        const city = String(r['شهر']||'').trim();
+        const isPartner = /همکار/.test(String(r['نوع مشتری']||''));
+        const rec = {id:uid(), name, phone, category, city, isPartner};
+        const ok = await dbInsert('customers', {id:rec.id, user_id:currentUser.id, name, phone, category, city, is_partner:isPartner});
+        if(ok){ customers.push(rec); counts.customers++; }
+      }
+
+      for(const r of prodRows){
+        const name = String(r['نام محصول']||'').trim();
+        if(!name || products.some(p=>p.name===name)) continue;
+        const category = String(r['دسته‌بندی']||'').trim();
+        const price = parseFloat(r['آخرین قیمت'])||0;
+        const rec = {id:uid(), name, category, price};
+        const ok = await dbInsert('products', {id:rec.id, user_id:currentUser.id, name, category, price});
+        if(ok){ products.push(rec); counts.products++; }
+      }
+
+      const itemsByInvoice = {};
+      itemRows.forEach(r=>{
+        const num = String(r['شماره فاکتور']||'').trim();
+        if(!num) return;
+        itemsByInvoice[num] = itemsByInvoice[num] || [];
+        itemsByInvoice[num].push({
+          name: String(r['نام کالا']||'').trim(),
+          desc: String(r['توضیحات']||'').trim(),
+          qty: parseFloat(r['تعداد'])||0,
+          price: parseFloat(r['قیمت واحد (ریال)'])||0
+        });
+      });
+
+      for(const r of invRows){
+        const number = String(r['شماره فاکتور']||'').trim();
+        if(!number || invoices.some(i=>i.number===number)) continue;
+
+        const custName = String(r['مشتری']||'').trim();
+        const storeName = String(r['فروشگاه']||'').trim();
+        let cust = customers.find(c=>c.name===custName);
+        if(!cust && custName){
+          cust = {id:uid(), name:custName, phone:'', category:'', city:'', isPartner:false};
+          const ok = await dbInsert('customers', {id:cust.id, user_id:currentUser.id, name:cust.name, phone:'', category:'', city:'', is_partner:false});
+          if(ok){ customers.push(cust); counts.customers++; } else { cust = null; }
+        }
+        let store = stores.find(s=>s.name===storeName);
+        if(!store && storeName){
+          store = {id:uid(), name:storeName, phone:'', sub:'', logo:'', theme:'classic'};
+          const ok = await dbInsert('stores', {id:store.id, user_id:currentUser.id, name:store.name, phone:'', sub:'', logo:'', theme:'classic'});
+          if(ok){ stores.push(store); counts.stores++; } else { store = null; }
+        }
+        const items = itemsByInvoice[number] || [];
+        const total = parseFloat(r['مبلغ کل (ریال)']) || items.reduce((s,it)=>s+it.qty*it.price,0);
+        const date = parseJalaliBackupDate(r['تاریخ']);
+        const rec = {
+          id: uid(), number, date,
+          customerId: cust?cust.id:'', customerName: custName,
+          storeId: store?store.id:'', storeName: storeName, storePhone: store?store.phone:'', storeSub: store?store.sub:'', storeLogo: store?store.logo:'', storeTheme: store?store.theme:'classic',
+          notes: String(r['توضیحات']||'').trim(), total, items
+        };
+        const ok = await dbInsert('invoices', {
+          id:rec.id, user_id:currentUser.id, number:rec.number, date:rec.date,
+          customer_id:rec.customerId, customer_name:rec.customerName,
+          store_id:rec.storeId, store_name:rec.storeName, store_phone:rec.storePhone, store_sub:rec.storeSub, store_logo:rec.storeLogo, store_theme:rec.storeTheme,
+          notes:rec.notes, total:rec.total, items:rec.items
+        });
+        if(ok){ invoices.push(rec); counts.invoices++; }
+      }
+
+      populateAllCategorySelects(); renderCategoryChips(); renderFilterCategoryOptions();
+      populateStoreSelect(); renderStoresList();
+      refreshCustomerDatalists(); renderCustomers();
+      refreshProductDatalist(); renderProductsList();
+      renderInvoicesList(); renderReport();
+
+      toast(`بازیابی شد: ${counts.invoices} فاکتور، ${counts.customers} مشتری، ${counts.products} محصول، ${counts.stores} فروشگاه، ${counts.categories} دسته‌بندی`);
+    }catch(err){
+      toast('خطا در خواندن فایل — مطمئن شوید همون فایل خروجی «دانلود پشتیبان کامل» است');
+    }
+    $('restoreBackupBtn').textContent = 'بارگذاری فایل پشتیبان';
+    e.target.value = '';
   });
 
   function populateStoreSelect(){
@@ -2403,7 +2797,16 @@
     if(event === 'PASSWORD_RECOVERY'){
       showAuthScreen();
       showAuthPanel('newpass');
+      // clear the recovery token from the URL so refreshing the page doesn't re-trigger this screen forever
+      try{ window.history.replaceState(null, '', window.location.pathname + window.location.search); }catch(e){}
     }
+  });
+
+  $('cancelNewPasswordBtn').addEventListener('click', async ()=>{
+    $('newPassword1').value = ''; $('newPassword2').value = ''; $('newPasswordError').textContent = '';
+    try{ await sb.auth.signOut(); }catch(e){}
+    currentUser = null;
+    showAuthPanel('login');
   });
 
   $('saveNewPasswordBtn').addEventListener('click', async ()=>{
