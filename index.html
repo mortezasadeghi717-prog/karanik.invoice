@@ -1248,6 +1248,7 @@
         toast('نام دسته‌بندی به‌روزرسانی شد');
       });
       chip.querySelector('[data-act=del]').addEventListener('click', async ()=>{
+        if(!window.confirm(`دسته‌بندی «${cat}» حذف شود؟ (مشتری‌ها و محصولاتی که این دسته را دارند دست‌نخورده می‌مانند، فقط از لیست دسته‌بندی‌ها حذف می‌شود)`)) return;
         const ok = await dbDeleteCategory(cat);
         if(!ok) return;
         categories = categories.filter(c=>c!==cat);
