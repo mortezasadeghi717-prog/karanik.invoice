@@ -22,6 +22,7 @@
     --line:#DCE3E1; --success:#2F7D5D; --danger:#B23B3B; --radius:12px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{overflow-x:hidden;}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Vazirmatn',Tahoma,sans-serif;}
   .app{display:flex;min-height:100vh;}
 
@@ -148,7 +149,8 @@
   .picker-item-new{color:var(--accent);font-weight:700;font-size:14.5px;}
   .picker-empty{padding:30px 0;text-align:center;color:var(--muted);font-size:13.5px;}
 
-  #printArea{ display:block;position:fixed;top:0;left:-99999px;background:#fff; }
+  #printAreaClip{ position:absolute;top:0;left:0;width:0;height:0;overflow:hidden;pointer-events:none; }
+  #printArea{ display:block;background:#fff; }
   .inv-doc{
     width:794px;padding:56px 60px;background:var(--p-bg,#fff);color:var(--p-ink,#1D1D1F);
     font-family:'Vazirmatn',Tahoma,sans-serif;
@@ -744,6 +746,7 @@
   <div class="fullpicker-list" id="datePickerGrid"></div>
 </div>
 
+<div id="printAreaClip">
 <div id="printArea">
   <div class="inv-doc theme-classic" id="invDocRoot">
     <div class="inv-top">
@@ -783,6 +786,7 @@
     <div class="inv-notes" id="p_notes" style="display:none;"></div>
     <div class="inv-footer" id="p_coPhone"></div>
   </div>
+</div>
 </div>
 
 <div class="toast" id="toast"></div>
