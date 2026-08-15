@@ -149,7 +149,7 @@
   .picker-item-new{color:var(--accent);font-weight:700;font-size:14.5px;}
   .picker-empty{padding:30px 0;text-align:center;color:var(--muted);font-size:13.5px;}
 
-  #printArea{ display:block;position:fixed;top:0;left:-9999px;background:#fff;pointer-events:none; }
+  #printArea{ display:none;background:#fff; }
   .inv-doc{
     width:794px;padding:56px 60px;background:var(--p-bg,#fff);color:var(--p-ink,#1D1D1F);
     font-family:'Vazirmatn',Tahoma,sans-serif;
@@ -1695,7 +1695,17 @@
 
   async function captureInvoiceCanvas(){
     const node = document.getElementById('printArea');
-    return html2canvas(node, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    node.style.position = 'fixed';
+    node.style.top = '0';
+    node.style.left = '-9999px';
+    node.style.display = 'block';
+    // let the browser complete one layout/paint pass before capturing
+    await new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    try{
+      return await html2canvas(node, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    } finally {
+      node.style.display = 'none';
+    }
   }
 
   async function buildInvoicePdf(){
