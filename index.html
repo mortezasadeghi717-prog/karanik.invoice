@@ -1703,7 +1703,13 @@
     // let the browser complete one layout/paint pass before capturing
     await new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     try{
-      return await html2canvas(node, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+      const fullWidth = node.scrollWidth;
+      const fullHeight = node.scrollHeight;
+      return await html2canvas(node, {
+        scale:2, backgroundColor:'#ffffff', useCORS:true,
+        width: fullWidth, height: fullHeight,
+        windowWidth: fullWidth, windowHeight: fullHeight
+      });
     } finally {
       node.style.display = 'none';
     }
@@ -1722,7 +1728,7 @@
       pdf.addImage(imgData,'PNG',0,0,wPt,hPt);
       return pdf;
     }
-    const pdf = new jsPDF('p','pt','a4');
+    const pdf = new jsPDF('p','pt','a5');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const imgWidth = pageWidth;
