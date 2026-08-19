@@ -1703,8 +1703,8 @@
     // let the browser complete one layout/paint pass before capturing
     await new Promise(resolve => requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     try{
-      const fullWidth = node.scrollWidth;
-      const fullHeight = node.scrollHeight;
+      const fullWidth = node.offsetWidth;
+      const fullHeight = node.offsetHeight;
       return await html2canvas(node, {
         scale:2, backgroundColor:'#ffffff', useCORS:true,
         width: fullWidth, height: fullHeight,
