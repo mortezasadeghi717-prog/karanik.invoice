@@ -163,8 +163,8 @@
   .inv-doc.theme-crimson .inv-top,
   .inv-doc.theme-forest .inv-top,
   .inv-doc.theme-royal .inv-top{ border-top:6px solid var(--p-accent);padding-top:18px; }
-  .inv-doc.theme-crimson table.inv-table{ border:1px solid var(--p-line);border-radius:10px;overflow:hidden; }
-  .inv-doc.theme-crimson table.inv-table td, .inv-doc.theme-crimson table.inv-table th{ padding-left:12px;padding-right:12px; }
+  .inv-doc.theme-crimson .inv-items-grid{ border:1px solid var(--p-line);border-radius:10px;overflow:hidden; }
+  .inv-doc.theme-crimson .inv-items-grid .ig-cell, .inv-doc.theme-crimson .inv-items-grid .ig-head{ padding-left:12px;padding-right:12px; }
   .inv-doc.theme-forest .total-row.grand{ background:var(--p-line);border-top:none;border-radius:10px;padding:12px 16px; }
   .inv-doc.theme-royal .doc-title{ font-style:normal;letter-spacing:0; }
   .inv-doc.theme-royal .inv-divider{ height:2px;background:repeating-linear-gradient(90deg,var(--p-accent) 0 10px, transparent 10px 16px); }
@@ -183,12 +183,12 @@
   .inv-doc.theme-ledger .inv-parties > div{ flex:1;padding:10px 16px; }
   .inv-doc.theme-ledger .inv-parties > div:first-child{ border-left:1px solid var(--p-accent); }
   .inv-doc.theme-ledger .inv-meta-right{ text-align:right; }
-  .inv-doc.theme-ledger table.inv-table{ border:1px solid var(--p-accent);border-collapse:collapse; }
-  .inv-doc.theme-ledger table.inv-table thead th{ border:1px solid var(--p-accent);background:#EFEFEF;text-align:center;padding:9px; }
-  .inv-doc.theme-ledger table.inv-table thead th.num{ text-align:center; }
-  .inv-doc.theme-ledger table.inv-table td{ border:1px solid var(--p-accent);text-align:center; }
-  .inv-doc.theme-ledger table.inv-table td.num{ text-align:center; }
-  .inv-doc.theme-ledger table.inv-table td .item-desc{ text-align:center; }
+  .inv-doc.theme-ledger .inv-items-grid{ border:1px solid var(--p-accent); }
+  .inv-doc.theme-ledger .inv-items-grid .ig-head{ border:1px solid var(--p-accent);background:#EFEFEF;text-align:center;padding:9px; }
+  .inv-doc.theme-ledger .inv-items-grid .ig-head.num{ text-align:center; }
+  .inv-doc.theme-ledger .inv-items-grid .ig-cell{ border:1px solid var(--p-accent);text-align:center; }
+  .inv-doc.theme-ledger .inv-items-grid .ig-cell.num{ text-align:center; }
+  .inv-doc.theme-ledger .inv-items-grid .item-desc{ text-align:center; }
   .inv-doc.theme-ledger .inv-totals{ margin-top:0; }
   .inv-doc.theme-ledger .inv-totals .totals-box{ width:100%;min-width:0;border:1px solid var(--p-accent);border-top:none; }
   .inv-doc.theme-ledger .total-row.grand{ border-top:none;justify-content:center;gap:20px; }
@@ -207,10 +207,10 @@
   .inv-doc.theme-receipt .inv-divider{ background:none;border-bottom:1px dashed var(--p-line);height:0;margin:14px 0; }
   .inv-doc.theme-receipt .inv-parties{ flex-direction:column;gap:6px;text-align:center;margin-bottom:14px; }
   .inv-doc.theme-receipt .inv-meta-right{ text-align:center; }
-  .inv-doc.theme-receipt table.inv-table{ font-size:11.5px; }
-  .inv-doc.theme-receipt table.inv-table thead th{ border-bottom:1px dashed var(--p-accent);font-size:10px;padding:0 0 7px; }
-  .inv-doc.theme-receipt table.inv-table td{ border-bottom:1px dashed var(--p-line);padding:8px 0; }
-  .inv-doc.theme-receipt table.inv-table td .item-desc{ font-size:10px; }
+  .inv-doc.theme-receipt .inv-items-grid{ font-size:11.5px; }
+  .inv-doc.theme-receipt .inv-items-grid .ig-head{ border-bottom:1px dashed var(--p-accent);font-size:10px;padding:0 0 7px; }
+  .inv-doc.theme-receipt .inv-items-grid .ig-cell{ border-bottom:1px dashed var(--p-line);padding:8px 0; }
+  .inv-doc.theme-receipt .inv-items-grid .item-desc{ font-size:10px; }
   .inv-doc.theme-receipt .inv-totals{ justify-content:center;margin-top:16px; }
   .inv-doc.theme-receipt .inv-totals .totals-box{ width:100%;min-width:0; }
   .inv-doc.theme-receipt .total-row.grand{ justify-content:center;gap:14px;border-top:1px dashed var(--p-accent);font-size:15px; }
@@ -231,10 +231,10 @@
   .inv-doc.theme-commerce .inv-parties{
     background:#fff;border:1px solid var(--p-line);border-radius:12px;padding:16px 20px;margin-top:22px;
   }
-  .inv-doc.theme-commerce table.inv-table{ background:#fff;border:1px solid var(--p-line);border-radius:12px;border-collapse:separate;border-spacing:0;overflow:hidden;margin-top:20px; }
-  .inv-doc.theme-commerce table.inv-table thead th{ background:#F3F4F6;padding:11px 16px;border-bottom:1px solid var(--p-line); }
-  .inv-doc.theme-commerce table.inv-table td{ padding:13px 16px; }
-  .inv-doc.theme-commerce table.inv-table tbody tr:nth-child(even) td{ background:#FAFAFB; }
+  .inv-doc.theme-commerce .inv-items-grid{ background:#fff;border:1px solid var(--p-line);border-radius:12px;overflow:hidden;margin-top:20px; }
+  .inv-doc.theme-commerce .inv-items-grid .ig-head{ background:#F3F4F6;padding:11px 16px;border-bottom:1px solid var(--p-line); }
+  .inv-doc.theme-commerce .inv-items-grid .ig-cell{ padding:13px 16px; }
+  .inv-doc.theme-commerce .inv-items-grid .ig-cell.ig-row-alt{ background:#FAFAFB; }
   .inv-doc.theme-commerce .inv-totals{ background:#fff;border:1px solid var(--p-line);border-radius:12px;margin-top:16px;padding:4px 20px; }
   .inv-doc.theme-commerce .total-row.grand{ color:var(--p-accent); }
   .inv-doc.theme-commerce .inv-notes{ background:#EFF6FF;border:1px solid #DBEAFE; }
@@ -252,12 +252,12 @@
   .party-label,.meta-label{font-size:10.5px;color:var(--p-muted);font-weight:700;display:block;margin-bottom:5px;}
   .party-name{font-size:15px;font-weight:600;color:var(--p-ink);}
   .inv-meta-right{text-align:left;font-size:13.5px;color:var(--p-ink);font-weight:600;}
-  table.inv-table{width:100%;border-collapse:collapse;}
-  table.inv-table thead th{ font-size:11.5px;color:var(--p-muted);font-weight:700; text-align:right;padding:0 0 10px;border-bottom:1px solid var(--p-accent); }
-  table.inv-table thead th.num{text-align:left;}
-  table.inv-table td{padding:13px 0;border-bottom:1px solid var(--p-line);font-size:13.5px;color:var(--p-ink);vertical-align:top;}
-  table.inv-table td.num{text-align:left;font-variant-numeric:tabular-nums;}
-  table.inv-table td .item-desc{display:block;font-size:11.5px;color:var(--p-muted);margin-top:2px;}
+  .inv-items-grid{ display:grid; grid-template-columns:46% 16% 19% 19%; width:100%; }
+  .inv-items-grid .ig-head{ font-size:11.5px;color:var(--p-muted);font-weight:700; text-align:right;padding:0 0 10px;border-bottom:1px solid var(--p-accent); }
+  .inv-items-grid .ig-head.num{text-align:left;}
+  .inv-items-grid .ig-cell{padding:13px 0;border-bottom:1px solid var(--p-line);font-size:13.5px;color:var(--p-ink);}
+  .inv-items-grid .ig-cell.num{text-align:left;font-variant-numeric:tabular-nums;}
+  .inv-items-grid .item-desc{display:block;font-size:11.5px;color:var(--p-muted);margin-top:2px;}
   .inv-totals{display:flex;justify-content:flex-end;margin-top:20px;}
   .inv-totals .totals-box{min-width:230px;}
   .total-row{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;color:var(--p-muted);}
@@ -772,10 +772,7 @@
         <div id="p_invDate"></div>
       </div>
     </div>
-    <table class="inv-table">
-      <thead><tr><th style="width:46%">شرح کالا</th><th class="num" style="width:16%">تعداد</th><th class="num" style="width:19%">قیمت واحد</th><th class="num" style="width:19%">مبلغ</th></tr></thead>
-      <tbody id="p_itemsBody"></tbody>
-    </table>
+    <div class="inv-items-grid" id="p_itemsGrid"></div>
     <div class="inv-totals">
       <div class="totals-box">
         <div class="total-row grand"><span>جمع کل</span><span id="p_grandTotal"></span></div>
@@ -1677,14 +1674,16 @@
     $('p_custName').textContent = inv.customerName;
     const custForPhone = customers.find(c=>c.id===inv.customerId);
     $('p_custPhone').textContent = custForPhone && custForPhone.phone ? custForPhone.phone : '';
-    $('p_itemsBody').innerHTML = inv.items.map(it=>`
-      <tr>
-        <td>${escapeHtml(it.name)}${it.desc ? `<span class="item-desc">${escapeHtml(it.desc)}</span>` : ''}</td>
-        <td class="num">${it.qty.toLocaleString('fa-IR')}</td>
-        <td class="num">${fmt(it.price)}</td>
-        <td class="num">${fmt(it.qty*it.price)}</td>
-      </tr>
-    `).join('');
+    const itemsHead = '<div class="ig-head">شرح کالا</div><div class="ig-head num">تعداد</div><div class="ig-head num">قیمت واحد</div><div class="ig-head num">مبلغ</div>';
+    $('p_itemsGrid').innerHTML = itemsHead + inv.items.map((it,idx)=>{
+      const alt = idx % 2 === 1 ? ' ig-row-alt' : '';
+      return `
+        <div class="ig-cell${alt}">${escapeHtml(it.name)}${it.desc ? `<span class="item-desc">${escapeHtml(it.desc)}</span>` : ''}</div>
+        <div class="ig-cell num${alt}">${it.qty.toLocaleString('fa-IR')}</div>
+        <div class="ig-cell num${alt}">${fmt(it.price)}</div>
+        <div class="ig-cell num${alt}">${fmt(it.qty*it.price)}</div>
+      `;
+    }).join('');
     $('p_grandTotal').textContent = fmt(inv.total) + ' ریال';
     const notesEl = $('p_notes');
     if(inv.notes){ notesEl.textContent = inv.notes; notesEl.style.display='block'; }
